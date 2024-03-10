@@ -104,7 +104,10 @@ export const useGameStore = create<State & Actions>()(
 
         // TODO: maybe ever find out why this check is necessary; sometimes it over-counts clicks.
         // but at least this line solves the bug, so click counting is reliable.
-        if (!state.clicked.some((clicked) => equalsCheck(clicked, c))) {
+        // solved (I think); the clear origin cell gets added twice; once in the recursion and another time here.
+        // so instead of the expensive loop check, just don't re-push if it was a clear cell to start!
+        // if (!state.clicked.some((clicked) => equalsCheck(clicked, c))) {
+        if (cellValue !== '') {
           state.clicked.push(c);
         }
       });
