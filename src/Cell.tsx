@@ -48,7 +48,9 @@ function Cell({ x, y }: { x: number; y: number }) {
     '4': 'text-purple-500',
   };
 
-  return <div className={`w-8 h-8 ${colourMap[display]}`}>{hasMine ? 'M' : `${display}`}</div>;
+  return (
+    <div className={`w-8 h-8 ${colourMap[display as keyof typeof colourMap]}`}>{hasMine ? 'M' : `${display}`}</div>
+  );
 }
 
 export default Cell;
