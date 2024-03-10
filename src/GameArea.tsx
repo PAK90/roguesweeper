@@ -14,18 +14,17 @@ function GameArea() {
 
   const resetGame = useGameStore((state) => state.resetGame);
 
-  // const currentClicks = useGameStore((state) => state.clicked);
+  const currentClicks = useGameStore((state) => state.clicked);
 
   useEffect(() => {
     resetGame();
   }, []);
 
-  // TODO: fix the bug that over-counts currentClicks somehow to fix completion detection.
-  // useEffect(() => {
-  //   if (gridHeight * gridWidth === currentClicks.length + totalMines) {
-  //     alert('Congrats on clearing the grid!');
-  //   }
-  // }, [currentClicks, totalMines]);
+  useEffect(() => {
+    if (gridHeight * gridWidth === currentClicks.length + totalMines) {
+      alert('Congrats on clearing the grid!');
+    }
+  }, [currentClicks, totalMines]);
 
   return (
     <>

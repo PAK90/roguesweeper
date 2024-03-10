@@ -101,7 +101,12 @@ export const useGameStore = create<State & Actions>()(
           };
           clickAdjacent(c);
         }
-        state.clicked.push(c);
+
+        // TODO: maybe ever find out why this check is necessary; sometimes it over-counts clicks.
+        // but at least this line solves the bug, so click counting is reliable.
+        if (!state.clicked.some((clicked) => equalsCheck(clicked, c))) {
+          state.clicked.push(c);
+        }
       });
     },
     resetGame: () => {
