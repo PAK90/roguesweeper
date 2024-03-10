@@ -89,31 +89,7 @@ export const useGameStore = create<State & Actions>()(
             if (state.clicked.some((clicked) => equalsCheck(clicked, coord))) return;
             state.clicked.push(coord);
 
-            // if (calculateCellNumber({ x: coord[0] - 1, y: coord[1] }, state.mines) === 0) {
             const isThisCellEmpty = calculateCellNumber({ x: coord[0], y: coord[1] }, state.mines) === 0;
-            // if (coord[0] - 1 >= 0 && coord[0] - 1 <= 9 && isThisCellEmpty) {
-            //   clickAdjacent([coord[0] - 1, coord[1]]);
-            // }
-            // // }
-            // // if (calculateCellNumber({ x: coord[0] + 1, y: coord[1] }, state.mines) === 0) {
-            // if (coord[0] + 1 >= 0 && coord[0] + 1 <= 9 && isThisCellEmpty) {
-            //   clickAdjacent([coord[0] + 1, coord[1]]);
-            // }
-            // // }
-            // // if (calculateCellNumber({ x: coord[0], y: coord[1] - 1 }, state.mines) === 0) {
-            // if (coord[1] - 1 >= 0 && coord[1] - 1 <= 9 && isThisCellEmpty) {
-            //   clickAdjacent([coord[0], coord[1] - 1]);
-            // }
-            // // }
-            // // if (calculateCellNumber({ x: coord[0], y: coord[1] + 1 }, state.mines) === 0) {
-            // if (
-            //   coord[1] + 1 >= 0 &&
-            //   coord[1] + 1 <= 9 &&
-            //   calculateCellNumber({ x: coord[0], y: coord[1] }, state.mines) === 0
-            // ) {
-            //   clickAdjacent([coord[0], coord[1] + 1]);
-            // }
-            // }
 
             for (let i = coord[0] - 1; i <= coord[0] + 1; i++) {
               for (let j = coord[1] - 1; j <= coord[1] + 1; j++) {

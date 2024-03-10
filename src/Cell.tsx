@@ -26,6 +26,9 @@ function Cell({ x, y }: { x: number; y: number }) {
       // right click, add a flag.
       toggleFlag([x, y]);
     } else if (!isClicked && !hasFlag) {
+      if (hasMine) {
+        alert('Whoops, kaboom!');
+      }
       clickCell([x, y], display);
     }
   };
@@ -49,7 +52,9 @@ function Cell({ x, y }: { x: number; y: number }) {
   };
 
   return (
-    <div className={`w-8 h-8 ${colourMap[display as keyof typeof colourMap]}`}>{hasMine ? 'M' : `${display}`}</div>
+    <div className={`w-8 h-8 border-2 border-sky-200 bg-gray-50 ${colourMap[display as keyof typeof colourMap]}`}>
+      {hasMine ? 'M' : `${display}`}
+    </div>
   );
 }
 
