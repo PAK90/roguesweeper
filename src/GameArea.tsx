@@ -56,7 +56,7 @@ function GameArea() {
           <input
             type="number"
             min={10}
-            max={30}
+            max={99}
             className=""
             value={totalMines}
             onChange={(e) => setStartingMines(parseInt(e.target.value))}
