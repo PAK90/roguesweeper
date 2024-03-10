@@ -1,6 +1,9 @@
 import { useGameStore } from './state';
 import range from './helpers/range.ts';
 import Cell from './Cell.tsx';
+import { useEffect } from 'react';
+import { Simulate } from 'react-dom/test-utils';
+import reset = Simulate.reset;
 
 function GameArea() {
   const gridWidth = useGameStore((state) => state.width);
@@ -12,6 +15,10 @@ function GameArea() {
   const setStartingMines = useGameStore((state) => state.setStartingMines);
 
   const resetGame = useGameStore((state) => state.resetGame);
+
+  useEffect(() => {
+    resetGame();
+  }, []);
 
   return (
     <>
