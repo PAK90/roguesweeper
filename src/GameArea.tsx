@@ -4,8 +4,6 @@ import Cell from './Cell.tsx';
 import { useEffect } from 'react';
 
 function GameArea() {
-  const gridWidth = useGameStore((state) => state.width);
-  const gridHeight = useGameStore((state) => state.height);
   const totalMines = useGameStore((state) => state.startingMines);
 
   const setWidth = useGameStore((state) => state.setWidth);
@@ -17,6 +15,8 @@ function GameArea() {
   const currentClicks = useGameStore((state) => state.clicked);
   const currentLayer = useGameStore((state) => state.layer);
   const setLayer = useGameStore((state) => state.setLayer);
+  const gridHeight = useGameStore((state) => state.height[currentLayer]);
+  const gridWidth = useGameStore((state) => state.width[currentLayer]);
 
   useEffect(() => {
     resetGame();

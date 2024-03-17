@@ -1,18 +1,17 @@
 import { useGameStore } from './state';
 import calculateCellNumber from './helpers/calculateCellNumber.ts';
-// import React from 'react';
+import React from 'react';
 
 function Cell({ x, y }: { x: number; y: number }) {
   const currentMines = useGameStore((state) => state.getCurrentLayerMines());
-
-  // const currentClicked = useGameStore((state) => state.clicked);
-  // const currentFlags = useGameStore((state) => state.flags);
-  // const clickCell = useGameStore((state) => state.clickCell);
-  // const toggleFlag = useGameStore((state) => state.addFlag);
+  const currentClicked = useGameStore((state) => state.getCurrentLayerClicks());
+  const currentFlags = useGameStore((state) => state.getCurrentLayerFlags());
+  const clickCell = useGameStore((state) => state.clickCell);
+  const toggleFlag = useGameStore((state) => state.addFlag);
   if (!currentMines) return;
 
-  // const isClicked = currentClicked.findIndex((cc) => cc[0] === x && cc[1] === y) !== -1;
-  // const hasFlag = currentFlags.findIndex((cc) => cc[0] === x && cc[1] === y) !== -1;
+  const isClicked = currentClicked.findIndex((cc) => cc[0] === x && cc[1] === y) !== -1;
+  const hasFlag = currentFlags.findIndex((cc) => cc[0] === x && cc[1] === y) !== -1;
 
   let display = '';
   const hasMine = currentMines.findIndex((cm) => cm[0] === x && cm[1] === y) !== -1;
@@ -24,25 +23,25 @@ function Cell({ x, y }: { x: number; y: number }) {
     display = 'M';
   }
 
-  // const clickThis = (e: React.MouseEvent) => {
-  //   if (e.type === 'contextmenu') {
-  //     e.preventDefault();
-  //     // right click, add a flag.
-  //     toggleFlag([x, y]);
-  //   } else if (!isClicked && !hasFlag) {
-  //     clickCell([x, y], display);
-  //   }
-  // };
+  const clickThis = (e: React.MouseEvent) => {
+    if (e.type === 'contextmenu') {
+      e.preventDefault();
+      // right click, add a flag.
+      toggleFlag([x, y]);
+    } else if (!isClicked && !hasFlag) {
+      clickCell([x, y], display);
+    }
+  };
 
-  // if (!isClicked) {
-  //   return (
-  //     <div
-  //       onClick={clickThis}
-  //       onContextMenu={clickThis}
-  //       className={`w-8 h-8 ${hasFlag ? 'bg-red-500' : 'bg-blue-200'} rounded-l`}
-  //     />
-  //   );
-  // }
+  if (!isClicked) {
+    return (
+      <div
+        onClick={clickThis}
+        onContextMenu={clickThis}
+        className={`w-8 h-8 ${hasFlag ? 'bg-red-500' : 'bg-blue-200'} rounded-l`}
+      />
+    );
+  }
 
   const colourMap = {
     M: 'text-black-500',
