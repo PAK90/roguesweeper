@@ -65,7 +65,6 @@ function GameArea() {
           />
         </label>
         <button onClick={resetGame}>New Game</button>
-        <div>|</div>
         <button onClick={() => setLayer(currentLayer - 1)} disabled={currentLayer < 1}>
           Layer Up
         </button>
