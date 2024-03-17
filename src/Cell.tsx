@@ -3,11 +3,13 @@ import calculateCellNumber from './helpers/calculateCellNumber.ts';
 import React from 'react';
 
 function Cell({ x, y }: { x: number; y: number }) {
-  const currentMines = useGameStore((state) => state.mines);
+  const currentMines = useGameStore((state) => state.getCurrentLayerMines());
+
   const currentClicked = useGameStore((state) => state.clicked);
   const currentFlags = useGameStore((state) => state.flags);
   const clickCell = useGameStore((state) => state.clickCell);
   const toggleFlag = useGameStore((state) => state.addFlag);
+  if (!currentMines) return;
 
   const isClicked = currentClicked.findIndex((cc) => cc[0] === x && cc[1] === y) !== -1;
   const hasFlag = currentFlags.findIndex((cc) => cc[0] === x && cc[1] === y) !== -1;
@@ -18,6 +20,8 @@ function Cell({ x, y }: { x: number; y: number }) {
     const cellNum = calculateCellNumber({ x, y }, currentMines, 1);
     // only show number if it's not 0
     if (cellNum) display = cellNum.toString();
+  } else {
+    display = 'M';
   }
 
   const clickThis = (e: React.MouseEvent) => {
@@ -26,22 +30,19 @@ function Cell({ x, y }: { x: number; y: number }) {
       // right click, add a flag.
       toggleFlag([x, y]);
     } else if (!isClicked && !hasFlag) {
-      if (hasMine) {
-        alert('Whoops, kaboom!');
-      }
       clickCell([x, y], display);
     }
   };
 
-  if (!isClicked) {
-    return (
-      <div
-        onClick={clickThis}
-        onContextMenu={clickThis}
-        className={`w-8 h-8 ${hasFlag ? 'bg-red-500' : 'bg-blue-200'} rounded-l`}
-      />
-    );
-  }
+  // if (!isClicked) {
+  //   return (
+  //     <div
+  //       onClick={clickThis}
+  //       onContextMenu={clickThis}
+  //       className={`w-8 h-8 ${hasFlag ? 'bg-red-500' : 'bg-blue-200'} rounded-l`}
+  //     />
+  //   );
+  // }
 
   const colourMap = {
     M: 'text-black-500',
@@ -53,7 +54,7 @@ function Cell({ x, y }: { x: number; y: number }) {
 
   return (
     <div className={`w-8 h-8 border-2 border-sky-200 bg-gray-50 ${colourMap[display as keyof typeof colourMap]}`}>
-      {hasMine ? 'M' : `${display}`}
+      {display}
     </div>
   );
 }

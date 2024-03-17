@@ -15,6 +15,8 @@ function GameArea() {
   const resetGame = useGameStore((state) => state.resetGame);
 
   const currentClicks = useGameStore((state) => state.clicked);
+  const currentLayer = useGameStore((state) => state.layer);
+  const setLayer = useGameStore((state) => state.setLayer);
 
   useEffect(() => {
     resetGame();
@@ -63,6 +65,12 @@ function GameArea() {
           />
         </label>
         <button onClick={resetGame}>New Game</button>
+        <div>|</div>
+        <button onClick={() => setLayer(currentLayer - 1)} disabled={currentLayer < 1}>
+          Layer Up
+        </button>
+        <p>{currentLayer + 1}</p>
+        <button onClick={() => setLayer(currentLayer + 1)}>Layer Down</button>
       </div>
       <div className="w-full flex justify-center">
         {range(gridWidth).map((_, rIx) => {
