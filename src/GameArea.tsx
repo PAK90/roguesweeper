@@ -2,18 +2,22 @@ import { useGameStore } from './state';
 import range from './helpers/range.ts';
 import Cell from './Cell.tsx';
 import { useEffect } from 'react';
+import ShopDialog from './ShopDialog.tsx';
 
 function GameArea() {
   const totalMines = useGameStore((state) => state.startingMines);
 
   const setWidth = useGameStore((state) => state.setWidth);
   const setHeight = useGameStore((state) => state.setHeight);
-  const setStartingMines = useGameStore((state) => state.setStartingMines);
+  // const setStartingMines = useGameStore((state) => state.setStartingMines);
 
   const resetGame = useGameStore((state) => state.resetGame);
 
-  const currentClicks = useGameStore((state) => state.clicked);
+  const currentClicksDone = useGameStore((state) => state.clicked);
   const currentLayer = useGameStore((state) => state.layer);
+  const currentLives = useGameStore((state) => state.lives);
+  const currentClicksLeft = useGameStore((state) => state.clicks);
+
   const setLayer = useGameStore((state) => state.setLayer);
   const gridHeight = useGameStore((state) => state.height[currentLayer]);
   const gridWidth = useGameStore((state) => state.width[currentLayer]);
@@ -23,13 +27,14 @@ function GameArea() {
   }, []);
 
   useEffect(() => {
-    if (gridHeight * gridWidth === currentClicks.length + totalMines) {
+    if (gridHeight * gridWidth === currentClicksDone.length + totalMines) {
       alert('Congrats on clearing the grid!');
     }
-  }, [currentClicks, totalMines]);
+  }, [currentClicksDone, totalMines]);
 
   return (
     <>
+      <ShopDialog />
       <div className="flex justify-center p-3">
         <label>
           Width:{' '}
@@ -53,17 +58,8 @@ function GameArea() {
             onChange={(e) => setHeight(parseInt(e.target.value))}
           />
         </label>
-        <label>
-          Mines:{' '}
-          <input
-            type="number"
-            min={10}
-            max={99}
-            className=""
-            value={totalMines}
-            onChange={(e) => setStartingMines(parseInt(e.target.value))}
-          />
-        </label>
+        <p>{`Lives: ${currentLives}`}</p>
+        <p>{`Clicks: ${currentClicksLeft}`}</p>
         <button onClick={resetGame}>New Game</button>
         <button onClick={() => setLayer(currentLayer - 1)} disabled={currentLayer < 1}>
           Layer Up

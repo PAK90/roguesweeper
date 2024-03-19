@@ -8,13 +8,33 @@ function Cell({ x, y }: { x: number; y: number }) {
   const currentFlags = useGameStore((state) => state.getCurrentLayerFlags());
   const clickCell = useGameStore((state) => state.clickCell);
   const toggleFlag = useGameStore((state) => state.addFlag);
+  const allClicked = useGameStore((state) => state.clicked);
+  const currentLayer = useGameStore((state) => state.layer);
+
   if (!currentMines) return;
 
+  const getIsCellDark = () => {
+    // a cell is dark if any of the cells in layers above it have not been clicked
+    // loop upwards through the layers and break once one unclicked cell is found
+    if (currentLayer === 0) return false;
+
+    let cellBlockedAbove = false;
+    for (let i = currentLayer - 1; i >= 0; i--) {
+      console.log('loop: ', allClicked);
+      if (allClicked[i].findIndex((ac) => ac[0] === x && ac[1] === y) === -1) {
+        cellBlockedAbove = true;
+        break;
+      }
+    }
+    return cellBlockedAbove;
+  };
+  const isCellDark = getIsCellDark();
   const isClicked = currentClicked.findIndex((cc) => cc[0] === x && cc[1] === y) !== -1;
   const hasFlag = currentFlags.findIndex((cc) => cc[0] === x && cc[1] === y) !== -1;
 
   let display = '';
   const hasMine = currentMines.findIndex((cm) => cm[0] === x && cm[1] === y) !== -1;
+
   if (!hasMine) {
     const cellNum = calculateCellNumber({ x, y }, currentMines, 1);
     // only show number if it's not 0
@@ -38,13 +58,14 @@ function Cell({ x, y }: { x: number; y: number }) {
       <div
         onClick={clickThis}
         onContextMenu={clickThis}
-        className={`w-8 h-8 ${hasFlag ? 'bg-red-500' : 'bg-blue-200'} rounded-l`}
+        className={`w-8 h-8 ${isCellDark ? 'bg-black' : hasFlag ? 'bg-red-500' : 'bg-blue-200'} rounded-l`}
       />
     );
   }
 
   const colourMap = {
     M: 'text-black-500',
+    $: 'text-orange-400',
     '1': 'text-blue-500',
     '2': 'text-green-500',
     '3': 'text-red-500',

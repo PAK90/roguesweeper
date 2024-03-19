@@ -1,13 +1,15 @@
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import calculateCellNumber from '../helpers/calculateCellNumber.ts';
-import generateMines from '../helpers/generateMines.ts';
+import generateLayerObjects from '../helpers/generateLayerObjects.ts';
+// import { Item } from '../items.ts';
 
 export type Mine = [number, number];
 export type Coordinate = [number, number];
 export type Flag = [number, number];
 
-type State = {
+export type GameState = {
+  shopping: boolean;
   lives: number;
   clicks: number;
   width: number[];
@@ -20,6 +22,7 @@ type State = {
 };
 
 type Actions = {
+  toggleShop: () => void;
   setWidth: (w: number) => void;
   setHeight: (h: number) => void;
   setStartingMines: (sm: number) => void;
@@ -35,16 +38,19 @@ type Actions = {
   getCurrentLayerClicks: () => Coordinate[];
   getCurrentLayerFlags: () => Flag[];
 
+  // useItem: (i: Item) => void;
+
   resetGame: () => void;
 };
 
-export const useGameStore = create<State & Actions>()(
+export const useGameStore = create<GameState & Actions>()(
   immer((set, get) => ({
-    width: [10],
-    height: [10],
+    shopping: false,
+    width: [15],
+    height: [15],
     startingMines: 10,
-    lives: 5,
-    clicks: 10,
+    lives: 3,
+    clicks: 30,
     layer: 0,
     mines: [[]],
     clicked: [[]],
@@ -63,6 +69,10 @@ export const useGameStore = create<State & Actions>()(
       return state.flags[state.layer];
     },
 
+    toggleShop: () =>
+      set((state) => {
+        state.shopping = !state.shopping;
+      }),
     setWidth: (w: number) =>
       set((state) => {
         state.width[0] = w;
@@ -98,7 +108,8 @@ export const useGameStore = create<State & Actions>()(
         // this... may need to be an object/dict instead of just a plain array,
         // especially if layer skipping becomes a thing... or maybe not.
         // also might be necessary to buffer-generate layers, especially if transparency is a thing
-        const layerScaling = Math.exp(state.layer / 30);
+        // const layerScaling = Math.exp(state.layer / 30);
+        const layerScaling = 1; // temporary to work with lighting tests
         if (!state.height[state.layer]) {
           state.height[state.layer] = Math.floor(state.height[0] * layerScaling);
         }
@@ -106,11 +117,13 @@ export const useGameStore = create<State & Actions>()(
           state.width[state.layer] = Math.floor(state.width[0] * layerScaling);
         }
         if (!state.mines[v]) {
-          state.mines[state.layer] = generateMines(
+          const mines = generateLayerObjects(
             Math.floor(state.height[0] * layerScaling),
             Math.floor(state.width[0] * layerScaling),
             Math.floor(state.startingMines * layerScaling ** 2),
           );
+          state.mines[state.layer] = mines;
+          // state.shops[state.layer] = shops;
         }
         if (!state.clicked[v]) {
           state.clicked[state.layer] = [];
@@ -133,7 +146,7 @@ export const useGameStore = create<State & Actions>()(
     clickCell: (c: Coordinate, cellValue: string) => {
       set((state) => {
         // take a click
-        state.reduceClicks();
+        state.clicks -= 1;
         // if the cell's value is 0, we want to 'click' all adjacent 0 cells, and to do this recursively.
         if (cellValue === '') {
           const clickAdjacent = (coord: Coordinate) => {
@@ -166,18 +179,22 @@ export const useGameStore = create<State & Actions>()(
           state.clicked[state.layer].push(c);
         }
         if (cellValue === 'M') {
-          state.takeLife();
+          // state.takeLife();
+          state.lives -= 1;
         }
       });
     },
+    // useItem: (i: Item) => {},
     resetGame: () => {
       set((state) => {
-        state.mines[0] = generateMines(state.width[0], state.height[0], state.startingMines);
+        const mines = generateLayerObjects(state.width[0], state.height[0], state.startingMines);
+        state.mines[0] = mines;
+        // state.shops[0] = shops;
         state.clicked = [[]];
         state.flags = [[]];
         state.layer = 0;
-        state.lives = 5;
-        state.clicks = 100;
+        state.lives = 3;
+        state.clicks = 30;
       });
     },
   })),
