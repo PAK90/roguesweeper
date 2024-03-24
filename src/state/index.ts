@@ -38,7 +38,7 @@ export type GameState = {
   layer: number;
   startingMines: number;
   cellData: CellUpdateData;
-  darknessData: { [key: string]: boolean };
+  darknessData: { [key: string]: number };
 
   mineIndex: string[][];
 };
@@ -70,7 +70,7 @@ export const useGameStore = create<GameState & Actions>()(
     shopping: false,
     width: [15],
     height: [15],
-    startingMines: 20,
+    startingMines: 15,
     lives: 3,
     clicks: 30,
     layer: 0,
@@ -114,20 +114,6 @@ export const useGameStore = create<GameState & Actions>()(
       set((state) => {
         state.layer = v;
         // if there are no mines on this layer, make some.
-        // this... may need to be an object/dict instead of just a plain array,
-        // especially if layer skipping becomes a thing... or maybe not.
-        // also might be necessary to buffer-generate layers, especially if transparency is a thing
-
-        // if we already have mines in this layer, don't make more!
-        // let alreadyMined = false;
-        // Object.keys(state.cellData).forEach((cellKey) => {
-        //   if (cellKey.split(':')[2] === state.layer.toString()) {
-        //     if (state.cellData[cellKey]?.mined) {
-        //       alreadyMined = true;
-        //     }
-        //   }
-        // });
-        // if (alreadyMined) return;
         if (state.mineIndex[state.layer]) return;
 
         // const layerScaling = Math.exp(state.layer / 30);
@@ -163,23 +149,24 @@ export const useGameStore = create<GameState & Actions>()(
         // take a click
         state.clicks -= 1;
         const cellKey = `${c[0]}:${c[1]}:${state.layer}`;
-        const darknessKey = `${c[0]}:${c[1]}`;
-        if (!state.darknessData[darknessKey]) {
-          state.darknessData = { ...state.darknessData, [darknessKey]: true };
-        }
         // if the cell's value is 0, we want to 'click' all adjacent 0 cells, and to do this recursively.
         if (cellValue === '') {
           const clickAdjacent = (coord: Coordinate) => {
-            // add this cell to obj of non-dark ones
-            if (!state.darknessData[`${coord[0]}:${coord[1]}`]) {
-              state.darknessData = { ...state.darknessData, [`${coord[0]}:${coord[1]}`]: true };
-            }
             // don't expand the auto click zone beyond a radius of N cells
             // this is partially due to the future infinite grid being a thing
             const distanceToOriginal = Math.sqrt(Math.abs(c[0] - coord[0]) ** 2 + Math.abs(c[1] - coord[1]) ** 2);
             const blankCellKey = `${coord[0]}:${coord[1]}:${state.layer}`;
             // make sure we're not re-checking the same dang cell
             if (state.cellData[blankCellKey]?.clicked || distanceToOriginal > 10) return;
+            // add this cell to obj of non-dark ones
+            if (!state.darknessData[`${coord[0]}:${coord[1]}`]) {
+              state.darknessData = { ...state.darknessData, [`${coord[0]}:${coord[1]}`]: 1 };
+            } else {
+              state.darknessData = {
+                ...state.darknessData,
+                [`${coord[0]}:${coord[1]}`]: state.darknessData[`${coord[0]}:${coord[1]}`] + 1,
+              };
+            }
 
             state.cellData[blankCellKey] = {
               ...state.cellData[blankCellKey],
@@ -213,6 +200,13 @@ export const useGameStore = create<GameState & Actions>()(
             ...state.cellData[cellKey],
             clicked: true,
           };
+
+          const darknessKey = `${c[0]}:${c[1]}`;
+          if (!state.darknessData[darknessKey]) {
+            state.darknessData = { ...state.darknessData, [darknessKey]: 1 };
+          } else {
+            state.darknessData = { ...state.darknessData, [darknessKey]: state.darknessData[darknessKey] + 1 };
+          }
         }
         if (cellValue === 'M') {
           // state.takeLife();
