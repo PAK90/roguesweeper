@@ -1,8 +1,8 @@
-import { CellData } from '../state';
+import { CellUpdateData } from '../state';
 
 export default function calculateCellNumber(
   coords: { x: number; y: number },
-  mines: CellData,
+  mines: CellUpdateData,
   layer: number,
   range = 1,
 ): number {

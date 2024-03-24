@@ -1,7 +1,6 @@
 import { useGameStore } from './state';
 import calculateCellNumber from './helpers/calculateCellNumber.ts';
 import React from 'react';
-import { current } from 'immer';
 
 function Cell({ x, y }: { x: number; y: number }) {
   // const currentMines = useGameStore((state) => state.getCurrentLayerMines());
@@ -20,7 +19,7 @@ function Cell({ x, y }: { x: number; y: number }) {
     // loop upwards through the layers and break once one unclicked cell is found
     if (currentLayer === 0) return false;
 
-    let cellBlockedAbove = false;
+    const cellBlockedAbove = false;
     // for (let i = currentLayer - 1; i >= 0; i--) {
     //   if (allClicked[i].findIndex((ac) => ac[0] === x && ac[1] === y) === -1) {
     //     cellBlockedAbove = true;
