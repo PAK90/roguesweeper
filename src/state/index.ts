@@ -69,29 +69,13 @@ type Actions = {
 export const useGameStore = create<GameState & Actions>()(
   immer((set) => ({
     shopping: false,
-    width: [15],
-    height: [15],
-    startingMines: 40,
+    width: [35],
+    height: [35],
+    startingMines: 20,
     lives: 3,
     clicks: 30,
     layer: 0,
-    // mines: [],
-    // clicked: [[]],
-    // flags: [[]],
     cellData: {},
-
-    // getCurrentLayerMines: () => {
-    //   const state = get();
-    //   return state.mines[state.layer];
-    // },
-    // getCurrentLayerClicks: () => {
-    //   const state = get();
-    //   return state.clicked[state.layer];
-    // },
-    // getCurrentLayerFlags: () => {
-    //   const state = get();
-    //   return state.flags[state.layer];
-    // },
 
     toggleShop: () =>
       set((state) => {
@@ -140,7 +124,6 @@ export const useGameStore = create<GameState & Actions>()(
         if (!state.width[state.layer]) {
           state.width[state.layer] = Math.floor(state.width[0] * layerScaling);
         }
-        // if (!state.mines[v]) {
         const mines = generateLayerObjects(
           Math.floor(state.height[0] * layerScaling),
           Math.floor(state.width[0] * layerScaling),
@@ -148,23 +131,10 @@ export const useGameStore = create<GameState & Actions>()(
           v,
         );
         state.cellData = { ...state.cellData, ...mines };
-        // }
-        // if (!state.clicked[v]) {
-        //   state.clicked[state.layer] = [];
-        // }
-        // if (!state.flags[v]) {
-        //   state.flags[state.layer] = [];
-        // }
       }),
     addFlag: (c: Coordinate) => {
       set((state) => {
         // flags are toggle-able.
-        // const flagIndex = state.flags[state.layer].findIndex((flag) => equalsCheck(flag, c));
-        // if (flagIndex === -1) {
-        //   state.flags[state.layer].push(c as Flag);
-        // } else {
-        //   state.flags[state.layer].splice(flagIndex, 1);
-        // }
         const cellKey = `${c[0]}:${c[1]}:${state.layer}`;
         if (state.cellData[cellKey]) {
           state.cellData[cellKey].flagged = !state.cellData[cellKey].flagged;
@@ -181,11 +151,12 @@ export const useGameStore = create<GameState & Actions>()(
         // if the cell's value is 0, we want to 'click' all adjacent 0 cells, and to do this recursively.
         if (cellValue === '') {
           const clickAdjacent = (coord: Coordinate) => {
+            // don't expand the auto click zone beyond a radius of N cells
+            // this is partially due to the future infinite grid being a thing
+            const distanceToOriginal = Math.sqrt(Math.abs(c[0] - coord[0]) ** 2 + Math.abs(c[1] - coord[1]) ** 2);
             const blankCellKey = `${coord[0]}:${coord[1]}:${state.layer}`;
             // make sure we're not re-checking the same dang cell
-            // if (state.clicked[state.layer].some((clicked) => equalsCheck(clicked, coord))) return;
-            // state.clicked[state.layer].push(coord);
-            if (state.cellData[blankCellKey]?.clicked) return;
+            if (state.cellData[blankCellKey]?.clicked || distanceToOriginal > 10) return;
 
             state.cellData[blankCellKey] = {
               ...state.cellData[blankCellKey],
@@ -215,7 +186,6 @@ export const useGameStore = create<GameState & Actions>()(
         // solved (I think); the clear origin cell gets added twice; once in the recursion and another time here.
         // so instead of the expensive loop check, just don't re-push if it was a clear cell to start!
         if (cellValue !== '') {
-          // state.clicked[state.layer].push(c);
           state.cellData[cellKey] = {
             ...state.cellData[cellKey],
             clicked: true,
@@ -232,9 +202,6 @@ export const useGameStore = create<GameState & Actions>()(
       set((state) => {
         const mines = generateLayerObjects(state.width[0], state.height[0], state.startingMines, 0);
         state.cellData = mines;
-        // state.shops[0] = shops;
-        // state.clicked = [[]];
-        // state.flags = [[]];
         state.layer = 0;
         state.lives = 3;
         state.clicks = 30;
