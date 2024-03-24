@@ -7,6 +7,7 @@ function Cell({ x, y }: { x: number; y: number }) {
   // const currentClicked = useGameStore((state) => state.getCurrentLayerClicks());
   // const currentFlags = useGameStore((state) => state.getCurrentLayerFlags());
   const currentCellData = useGameStore((state) => state.cellData);
+  const currentDarknessData = useGameStore((state) => state.darknessData);
   const clickCell = useGameStore((state) => state.clickCell);
   const toggleFlag = useGameStore((state) => state.addFlag);
   // const allClicked = useGameStore((state) => state.clicked);
@@ -14,21 +15,8 @@ function Cell({ x, y }: { x: number; y: number }) {
 
   // if (!currentMines) return;
 
-  const getIsCellDark = () => {
-    // a cell is dark if any of the cells in layers above it have not been clicked
-    // loop upwards through the layers and break once one unclicked cell is found
-    if (currentLayer === 0) return false;
-
-    const cellBlockedAbove = false;
-    // for (let i = currentLayer - 1; i >= 0; i--) {
-    //   if (allClicked[i].findIndex((ac) => ac[0] === x && ac[1] === y) === -1) {
-    //     cellBlockedAbove = true;
-    //     break;
-    //   }
-    // }
-    return cellBlockedAbove;
-  };
-  const isCellDark = getIsCellDark();
+  // console.log(currentDarknessData);
+  const isCellDark = !currentDarknessData[`${x}:${y}`] && currentLayer !== 0;
   const cellKey = `${x}:${y}:${currentLayer}`;
   // const isClicked = currentClicked.findIndex((cc) => cc[0] === x && cc[1] === y) !== -1;
   // const hasFlag = currentFlags.findIndex((cc) => cc[0] === x && cc[1] === y) !== -1;

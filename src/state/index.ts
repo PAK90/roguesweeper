@@ -37,11 +37,10 @@ export type GameState = {
   height: number[];
   layer: number;
   startingMines: number;
-  // mines: [Mine[]];
-  // mines: Mines;
-  // clicked: [Coordinate[]];
-  // flags: [Flag[]];
   cellData: CellUpdateData;
+  darknessData: { [key: string]: boolean };
+
+  mineIndex: string[][];
 };
 
 type Actions = {
@@ -69,13 +68,15 @@ type Actions = {
 export const useGameStore = create<GameState & Actions>()(
   immer((set) => ({
     shopping: false,
-    width: [35],
-    height: [35],
+    width: [15],
+    height: [15],
     startingMines: 20,
     lives: 3,
     clicks: 30,
     layer: 0,
     cellData: {},
+    darknessData: {},
+    mineIndex: [],
 
     toggleShop: () =>
       set((state) => {
@@ -116,6 +117,19 @@ export const useGameStore = create<GameState & Actions>()(
         // this... may need to be an object/dict instead of just a plain array,
         // especially if layer skipping becomes a thing... or maybe not.
         // also might be necessary to buffer-generate layers, especially if transparency is a thing
+
+        // if we already have mines in this layer, don't make more!
+        // let alreadyMined = false;
+        // Object.keys(state.cellData).forEach((cellKey) => {
+        //   if (cellKey.split(':')[2] === state.layer.toString()) {
+        //     if (state.cellData[cellKey]?.mined) {
+        //       alreadyMined = true;
+        //     }
+        //   }
+        // });
+        // if (alreadyMined) return;
+        if (state.mineIndex[state.layer]) return;
+
         // const layerScaling = Math.exp(state.layer / 30);
         const layerScaling = 1; // temporary to work with lighting tests
         if (!state.height[state.layer]) {
@@ -124,13 +138,14 @@ export const useGameStore = create<GameState & Actions>()(
         if (!state.width[state.layer]) {
           state.width[state.layer] = Math.floor(state.width[0] * layerScaling);
         }
-        const mines = generateLayerObjects(
+        const { mines, mineIndex } = generateLayerObjects(
           Math.floor(state.height[0] * layerScaling),
           Math.floor(state.width[0] * layerScaling),
           Math.floor(state.startingMines * layerScaling ** 2),
           v,
         );
         state.cellData = { ...state.cellData, ...mines };
+        state.mineIndex[state.layer] = mineIndex;
       }),
     addFlag: (c: Coordinate) => {
       set((state) => {
@@ -148,9 +163,17 @@ export const useGameStore = create<GameState & Actions>()(
         // take a click
         state.clicks -= 1;
         const cellKey = `${c[0]}:${c[1]}:${state.layer}`;
+        const darknessKey = `${c[0]}:${c[1]}`;
+        if (!state.darknessData[darknessKey]) {
+          state.darknessData = { ...state.darknessData, [darknessKey]: true };
+        }
         // if the cell's value is 0, we want to 'click' all adjacent 0 cells, and to do this recursively.
         if (cellValue === '') {
           const clickAdjacent = (coord: Coordinate) => {
+            // add this cell to obj of non-dark ones
+            if (!state.darknessData[`${coord[0]}:${coord[1]}`]) {
+              state.darknessData = { ...state.darknessData, [`${coord[0]}:${coord[1]}`]: true };
+            }
             // don't expand the auto click zone beyond a radius of N cells
             // this is partially due to the future infinite grid being a thing
             const distanceToOriginal = Math.sqrt(Math.abs(c[0] - coord[0]) ** 2 + Math.abs(c[1] - coord[1]) ** 2);
@@ -200,8 +223,10 @@ export const useGameStore = create<GameState & Actions>()(
     // useItem: (i: Item) => {},
     resetGame: () => {
       set((state) => {
-        const mines = generateLayerObjects(state.width[0], state.height[0], state.startingMines, 0);
+        const { mines, mineIndex } = generateLayerObjects(state.width[0], state.height[0], state.startingMines, 0);
         state.cellData = mines;
+        state.mineIndex[0] = mineIndex;
+        state.darknessData = {};
         state.layer = 0;
         state.lives = 3;
         state.clicks = 30;
