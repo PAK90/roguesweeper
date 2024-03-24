@@ -15,7 +15,7 @@ function Cell({ x, y }: { x: number; y: number }) {
 
   // if (!currentMines) return;
 
-  console.log(currentDarknessData);
+  // console.log(currentDarknessData);
   const isCellDark = currentDarknessData[`${x}:${y}`] !== currentLayer && currentLayer !== 0;
   const cellKey = `${x}:${y}:${currentLayer}`;
   // const isClicked = currentClicked.findIndex((cc) => cc[0] === x && cc[1] === y) !== -1;

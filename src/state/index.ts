@@ -68,9 +68,9 @@ type Actions = {
 export const useGameStore = create<GameState & Actions>()(
   immer((set) => ({
     shopping: false,
-    width: [15],
-    height: [15],
-    startingMines: 15,
+    width: [30],
+    height: [30],
+    startingMines: 50,
     lives: 3,
     clicks: 30,
     layer: 0,
@@ -102,14 +102,6 @@ export const useGameStore = create<GameState & Actions>()(
       set((state) => {
         state.clicks -= 1;
       }),
-    // addMine: (m: Mine) =>
-    //   set((state) => {
-    //     state.mines.push(m);
-    //   }),
-    // setMines: (m: Mine[]) =>
-    //   set((state) => {
-    //     state.mines[state.layer] = m;
-    //   }),
     setLayer: (v: number) =>
       set((state) => {
         state.layer = v;
@@ -157,7 +149,7 @@ export const useGameStore = create<GameState & Actions>()(
             const distanceToOriginal = Math.sqrt(Math.abs(c[0] - coord[0]) ** 2 + Math.abs(c[1] - coord[1]) ** 2);
             const blankCellKey = `${coord[0]}:${coord[1]}:${state.layer}`;
             // make sure we're not re-checking the same dang cell
-            if (state.cellData[blankCellKey]?.clicked || distanceToOriginal > 10) return;
+            if (state.cellData[blankCellKey]?.clicked || distanceToOriginal > 6) return;
             // add this cell to obj of non-dark ones
             if (!state.darknessData[`${coord[0]}:${coord[1]}`]) {
               state.darknessData = { ...state.darknessData, [`${coord[0]}:${coord[1]}`]: 1 };
