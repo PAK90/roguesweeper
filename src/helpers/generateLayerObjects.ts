@@ -1,45 +1,42 @@
-import { Coordinate, Mine } from '../state';
+import { CellUpdateData } from '../state';
 import Rand from 'rand-seed';
 
-const equalsCheck = (a: Mine | Coordinate, b: Mine | Coordinate) =>
-  a.length === b.length && a.every((v, i) => v === b[i]);
-export default function generateLayerObjects(gridWidth: number, gridHeight: number, totalMines: number): Mine[] {
-  const mines: Mine[] = [];
-  // const shops: Coordinate[] = [];
+// const equalsCheck = (a: Mine | Coordinate, b: Mine | Coordinate) =>
+//   a.length === b.length && a.every((v, i) => v === b[i]);
+export default function generateLayerObjects(
+  gridWidth: number,
+  gridHeight: number,
+  totalMines: number,
+  layer: number,
+): CellUpdateData {
+  let mines: CellUpdateData = {};
 
   const random = new Rand();
   for (let i = 0; i < totalMines; i++) {
-    const makeMinePair = (): Mine => {
-      const mineX = Math.floor(random.next() * gridWidth);
-      const mineY = Math.floor(random.next() * gridHeight);
-      return [mineX, mineY];
+    const makeNewMine = (): CellUpdateData => {
+      // const mineX = Math.floor(random.next() * gridWidth);
+      // const mineY = Math.floor(random.next() * gridHeight);
+      // return [mineX, mineY];
+      return {
+        [`${Math.floor(random.next() * gridWidth)}:${Math.floor(random.next() * gridHeight)}:${layer}`]: {
+          mined: true,
+          clicked: false,
+          flagged: false,
+        },
+      };
     };
-    let newMinePair: Mine = makeMinePair();
+    let newMine: CellUpdateData = makeNewMine();
 
     // check that mines doesn't already contain this x/y pair.
-    while (mines.some((m) => equalsCheck(m, newMinePair))) {
-      console.log('~~~ had to dedup! ~~~');
-      newMinePair = makeMinePair();
+    // while (mines.some((m) => equalsCheck(m, newMine))) {
+    //   console.log('~~~ had to dedup! ~~~');
+    //   newMine = makeNewMine();
+    // }
+    if (mines[Object.keys(newMine)[0]]) {
+      newMine = makeNewMine();
     }
-    mines.push(newMinePair);
+    mines = { ...mines, ...newMine };
   }
-  // for (let i = 0; i < totalShops; i++) {
-  //   const makeShopPair = (): Mine => {
-  //     const shopX = Math.floor(random.next() * gridWidth);
-  //     const shopY = Math.floor(random.next() * gridHeight);
-  //     return [shopX, shopY];
-  //   };
-  //   let newShopPair: Mine = makeShopPair();
-  //
-  //   // check that shops doesn't already contain this x/y pair.
-  //   while (shops.concat(mines).some((m) => equalsCheck(m, newShopPair))) {
-  //     console.log('~~~ had to dedup! ~~~');
-  //     newShopPair = makeShopPair();
-  //   }
-  //   shops.push(newShopPair);
-  // }
-
-  // console.log({ mines, shops });
-  // return { mines, shops };
+  console.log(mines);
   return mines;
 }

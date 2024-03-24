@@ -5,7 +5,7 @@ import { useEffect } from 'react';
 import ShopDialog from './ShopDialog.tsx';
 
 function GameArea() {
-  const totalMines = useGameStore((state) => state.startingMines);
+  // const totalMines = useGameStore((state) => state.startingMines);
 
   const setWidth = useGameStore((state) => state.setWidth);
   const setHeight = useGameStore((state) => state.setHeight);
@@ -13,7 +13,7 @@ function GameArea() {
 
   const resetGame = useGameStore((state) => state.resetGame);
 
-  const currentClicksDone = useGameStore((state) => state.clicked);
+  // const currentClicksDone = useGameStore((state) => state.clicked);
   const currentLayer = useGameStore((state) => state.layer);
   const currentLives = useGameStore((state) => state.lives);
   const currentClicksLeft = useGameStore((state) => state.clicks);
@@ -26,11 +26,11 @@ function GameArea() {
     resetGame();
   }, []);
 
-  useEffect(() => {
-    if (gridHeight * gridWidth === currentClicksDone.length + totalMines) {
-      alert('Congrats on clearing the grid!');
-    }
-  }, [currentClicksDone, totalMines]);
+  // useEffect(() => {
+  //   if (gridHeight * gridWidth === currentClicksDone.length + totalMines) {
+  //     alert('Congrats on clearing the grid!');
+  //   }
+  // }, [currentClicksDone, totalMines]);
 
   return (
     <>

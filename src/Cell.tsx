@@ -1,17 +1,19 @@
 import { useGameStore } from './state';
 import calculateCellNumber from './helpers/calculateCellNumber.ts';
 import React from 'react';
+import { current } from 'immer';
 
 function Cell({ x, y }: { x: number; y: number }) {
-  const currentMines = useGameStore((state) => state.getCurrentLayerMines());
-  const currentClicked = useGameStore((state) => state.getCurrentLayerClicks());
-  const currentFlags = useGameStore((state) => state.getCurrentLayerFlags());
+  // const currentMines = useGameStore((state) => state.getCurrentLayerMines());
+  // const currentClicked = useGameStore((state) => state.getCurrentLayerClicks());
+  // const currentFlags = useGameStore((state) => state.getCurrentLayerFlags());
+  const currentCellData = useGameStore((state) => state.cellData);
   const clickCell = useGameStore((state) => state.clickCell);
   const toggleFlag = useGameStore((state) => state.addFlag);
-  const allClicked = useGameStore((state) => state.clicked);
+  // const allClicked = useGameStore((state) => state.clicked);
   const currentLayer = useGameStore((state) => state.layer);
 
-  if (!currentMines) return;
+  // if (!currentMines) return;
 
   const getIsCellDark = () => {
     // a cell is dark if any of the cells in layers above it have not been clicked
@@ -19,24 +21,27 @@ function Cell({ x, y }: { x: number; y: number }) {
     if (currentLayer === 0) return false;
 
     let cellBlockedAbove = false;
-    for (let i = currentLayer - 1; i >= 0; i--) {
-      console.log('loop: ', allClicked);
-      if (allClicked[i].findIndex((ac) => ac[0] === x && ac[1] === y) === -1) {
-        cellBlockedAbove = true;
-        break;
-      }
-    }
+    // for (let i = currentLayer - 1; i >= 0; i--) {
+    //   if (allClicked[i].findIndex((ac) => ac[0] === x && ac[1] === y) === -1) {
+    //     cellBlockedAbove = true;
+    //     break;
+    //   }
+    // }
     return cellBlockedAbove;
   };
   const isCellDark = getIsCellDark();
-  const isClicked = currentClicked.findIndex((cc) => cc[0] === x && cc[1] === y) !== -1;
-  const hasFlag = currentFlags.findIndex((cc) => cc[0] === x && cc[1] === y) !== -1;
+  const cellKey = `${x}:${y}:${currentLayer}`;
+  // const isClicked = currentClicked.findIndex((cc) => cc[0] === x && cc[1] === y) !== -1;
+  // const hasFlag = currentFlags.findIndex((cc) => cc[0] === x && cc[1] === y) !== -1;
+  const isClicked = currentCellData[cellKey]?.clicked;
+  const hasFlag = currentCellData[cellKey]?.flagged;
 
   let display = '';
-  const hasMine = currentMines.findIndex((cm) => cm[0] === x && cm[1] === y) !== -1;
+  // const hasMine = currentMines.findIndex((cm) => cm[0] === x && cm[1] === y) !== -1;
+  const hasMine = currentCellData[cellKey]?.mined;
 
   if (!hasMine) {
-    const cellNum = calculateCellNumber({ x, y }, currentMines, 1);
+    const cellNum = calculateCellNumber({ x, y }, currentCellData, currentLayer);
     // only show number if it's not 0
     if (cellNum) display = cellNum.toString();
   } else {

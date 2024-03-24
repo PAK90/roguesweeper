@@ -4,9 +4,30 @@ import calculateCellNumber from '../helpers/calculateCellNumber.ts';
 import generateLayerObjects from '../helpers/generateLayerObjects.ts';
 // import { Item } from '../items.ts';
 
-export type Mine = [number, number];
+// export type Mine = [number, number];
 export type Coordinate = [number, number];
 export type Flag = [number, number];
+export type Mines = { [key: string]: boolean };
+
+interface BaseCell {
+  mined?: boolean;
+  clicked?: boolean;
+  flagged?: boolean;
+}
+
+interface MinedCell extends BaseCell {
+  mined: true;
+}
+interface ClickedCell extends BaseCell {
+  clicked: true;
+}
+interface FlaggedCell extends BaseCell {
+  flagged: true;
+}
+
+export type CellUpdateData = {
+  [key: string]: MinedCell | ClickedCell | FlaggedCell;
+};
 
 export type GameState = {
   shopping: boolean;
@@ -16,9 +37,11 @@ export type GameState = {
   height: number[];
   layer: number;
   startingMines: number;
-  mines: [Mine[]];
-  clicked: [Coordinate[]];
-  flags: [Flag[]];
+  // mines: [Mine[]];
+  // mines: Mines;
+  // clicked: [Coordinate[]];
+  // flags: [Flag[]];
+  cellData: CellUpdateData;
 };
 
 type Actions = {
@@ -29,14 +52,14 @@ type Actions = {
   takeLife: () => void;
   reduceClicks: () => void;
   // addMine: (m: Mine) => void;
-  setMines: (m: Mine[]) => void;
+  // setMines: (m: CellUpdateData) => void;
   setLayer: (v: number) => void;
   clickCell: (c: Coordinate, cellValue: string) => void;
   addFlag: (c: Coordinate) => void;
 
-  getCurrentLayerMines: () => Mine[];
-  getCurrentLayerClicks: () => Coordinate[];
-  getCurrentLayerFlags: () => Flag[];
+  // getCurrentLayerMines: () => CellData;
+  // getCurrentLayerClicks: () => CellData;
+  // getCurrentLayerFlags: () => CellData;
 
   // useItem: (i: Item) => void;
 
@@ -44,30 +67,31 @@ type Actions = {
 };
 
 export const useGameStore = create<GameState & Actions>()(
-  immer((set, get) => ({
+  immer((set) => ({
     shopping: false,
     width: [15],
     height: [15],
-    startingMines: 10,
+    startingMines: 40,
     lives: 3,
     clicks: 30,
     layer: 0,
-    mines: [[]],
-    clicked: [[]],
-    flags: [[]],
+    // mines: [],
+    // clicked: [[]],
+    // flags: [[]],
+    cellData: {},
 
-    getCurrentLayerMines: () => {
-      const state = get();
-      return state.mines[state.layer];
-    },
-    getCurrentLayerClicks: () => {
-      const state = get();
-      return state.clicked[state.layer];
-    },
-    getCurrentLayerFlags: () => {
-      const state = get();
-      return state.flags[state.layer];
-    },
+    // getCurrentLayerMines: () => {
+    //   const state = get();
+    //   return state.mines[state.layer];
+    // },
+    // getCurrentLayerClicks: () => {
+    //   const state = get();
+    //   return state.clicked[state.layer];
+    // },
+    // getCurrentLayerFlags: () => {
+    //   const state = get();
+    //   return state.flags[state.layer];
+    // },
 
     toggleShop: () =>
       set((state) => {
@@ -97,10 +121,10 @@ export const useGameStore = create<GameState & Actions>()(
     //   set((state) => {
     //     state.mines.push(m);
     //   }),
-    setMines: (m: Mine[]) =>
-      set((state) => {
-        state.mines[state.layer] = m;
-      }),
+    // setMines: (m: Mine[]) =>
+    //   set((state) => {
+    //     state.mines[state.layer] = m;
+    //   }),
     setLayer: (v: number) =>
       set((state) => {
         state.layer = v;
@@ -116,30 +140,36 @@ export const useGameStore = create<GameState & Actions>()(
         if (!state.width[state.layer]) {
           state.width[state.layer] = Math.floor(state.width[0] * layerScaling);
         }
-        if (!state.mines[v]) {
-          const mines = generateLayerObjects(
-            Math.floor(state.height[0] * layerScaling),
-            Math.floor(state.width[0] * layerScaling),
-            Math.floor(state.startingMines * layerScaling ** 2),
-          );
-          state.mines[state.layer] = mines;
-          // state.shops[state.layer] = shops;
-        }
-        if (!state.clicked[v]) {
-          state.clicked[state.layer] = [];
-        }
-        if (!state.flags[v]) {
-          state.flags[state.layer] = [];
-        }
+        // if (!state.mines[v]) {
+        const mines = generateLayerObjects(
+          Math.floor(state.height[0] * layerScaling),
+          Math.floor(state.width[0] * layerScaling),
+          Math.floor(state.startingMines * layerScaling ** 2),
+          v,
+        );
+        state.cellData = { ...state.cellData, ...mines };
+        // }
+        // if (!state.clicked[v]) {
+        //   state.clicked[state.layer] = [];
+        // }
+        // if (!state.flags[v]) {
+        //   state.flags[state.layer] = [];
+        // }
       }),
     addFlag: (c: Coordinate) => {
       set((state) => {
         // flags are toggle-able.
-        const flagIndex = state.flags[state.layer].findIndex((flag) => equalsCheck(flag, c));
-        if (flagIndex === -1) {
-          state.flags[state.layer].push(c as Flag);
+        // const flagIndex = state.flags[state.layer].findIndex((flag) => equalsCheck(flag, c));
+        // if (flagIndex === -1) {
+        //   state.flags[state.layer].push(c as Flag);
+        // } else {
+        //   state.flags[state.layer].splice(flagIndex, 1);
+        // }
+        const cellKey = `${c[0]}:${c[1]}:${state.layer}`;
+        if (state.cellData[cellKey]) {
+          state.cellData[cellKey].flagged = !state.cellData[cellKey].flagged;
         } else {
-          state.flags[state.layer].splice(flagIndex, 1);
+          state.cellData[cellKey] = { clicked: false, mined: false, flagged: true };
         }
       });
     },
@@ -147,14 +177,23 @@ export const useGameStore = create<GameState & Actions>()(
       set((state) => {
         // take a click
         state.clicks -= 1;
+        const cellKey = `${c[0]}:${c[1]}:${state.layer}`;
         // if the cell's value is 0, we want to 'click' all adjacent 0 cells, and to do this recursively.
         if (cellValue === '') {
           const clickAdjacent = (coord: Coordinate) => {
+            const blankCellKey = `${coord[0]}:${coord[1]}:${state.layer}`;
             // make sure we're not re-checking the same dang cell
-            if (state.clicked[state.layer].some((clicked) => equalsCheck(clicked, coord))) return;
-            state.clicked[state.layer].push(coord);
+            // if (state.clicked[state.layer].some((clicked) => equalsCheck(clicked, coord))) return;
+            // state.clicked[state.layer].push(coord);
+            if (state.cellData[blankCellKey]?.clicked) return;
 
-            const isThisCellEmpty = calculateCellNumber({ x: coord[0], y: coord[1] }, state.mines[state.layer]) === 0;
+            state.cellData[blankCellKey] = {
+              ...state.cellData[blankCellKey],
+              clicked: true,
+            };
+
+            const isThisCellEmpty =
+              calculateCellNumber({ x: coord[0], y: coord[1] }, state.cellData, state.layer) === 0;
 
             for (let i = coord[0] - 1; i <= coord[0] + 1; i++) {
               for (let j = coord[1] - 1; j <= coord[1] + 1; j++) {
@@ -176,7 +215,11 @@ export const useGameStore = create<GameState & Actions>()(
         // solved (I think); the clear origin cell gets added twice; once in the recursion and another time here.
         // so instead of the expensive loop check, just don't re-push if it was a clear cell to start!
         if (cellValue !== '') {
-          state.clicked[state.layer].push(c);
+          // state.clicked[state.layer].push(c);
+          state.cellData[cellKey] = {
+            ...state.cellData[cellKey],
+            clicked: true,
+          };
         }
         if (cellValue === 'M') {
           // state.takeLife();
@@ -187,11 +230,11 @@ export const useGameStore = create<GameState & Actions>()(
     // useItem: (i: Item) => {},
     resetGame: () => {
       set((state) => {
-        const mines = generateLayerObjects(state.width[0], state.height[0], state.startingMines);
-        state.mines[0] = mines;
+        const mines = generateLayerObjects(state.width[0], state.height[0], state.startingMines, 0);
+        state.cellData = mines;
         // state.shops[0] = shops;
-        state.clicked = [[]];
-        state.flags = [[]];
+        // state.clicked = [[]];
+        // state.flags = [[]];
         state.layer = 0;
         state.lives = 3;
         state.clicks = 30;
@@ -200,4 +243,4 @@ export const useGameStore = create<GameState & Actions>()(
   })),
 );
 
-const equalsCheck = (a: Coordinate, b: Coordinate) => a.length === b.length && a.every((v, i) => v === b[i]);
+// const equalsCheck = (a: Coordinate, b: Coordinate) => a.length === b.length && a.every((v, i) => v === b[i]);
