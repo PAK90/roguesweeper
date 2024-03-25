@@ -36,6 +36,7 @@ export type GameState = {
   width: number[];
   height: number[];
   layer: number;
+  comboCount: number;
   startingMines: number;
   cellData: CellUpdateData;
   darknessData: { [key: string]: number };
@@ -70,10 +71,11 @@ export const useGameStore = create<GameState & Actions>()(
     shopping: false,
     width: [30],
     height: [30],
-    startingMines: 50,
+    startingMines: 99,
     lives: 3,
     clicks: 30,
     layer: 0,
+    comboCount: 0,
     cellData: {},
     darknessData: {},
     mineIndex: [],
@@ -143,6 +145,8 @@ export const useGameStore = create<GameState & Actions>()(
         const cellKey = `${c[0]}:${c[1]}:${state.layer}`;
         // if the cell's value is 0, we want to 'click' all adjacent 0 cells, and to do this recursively.
         if (cellValue === '') {
+          // clear the combo counter
+          state.comboCount = 0;
           const clickAdjacent = (coord: Coordinate) => {
             // don't expand the auto click zone beyond a radius of N cells
             // this is partially due to the future infinite grid being a thing
@@ -188,6 +192,13 @@ export const useGameStore = create<GameState & Actions>()(
         // solved (I think); the clear origin cell gets added twice; once in the recursion and another time here.
         // so instead of the expensive loop check, just don't re-push if it was a clear cell to start!
         if (cellValue !== '') {
+          // increase the combo counter by the cell value
+          if (cellValue !== 'M') {
+            state.comboCount += parseInt(cellValue);
+          } else {
+            state.comboCount = 0;
+            state.lives -= 1;
+          }
           state.cellData[cellKey] = {
             ...state.cellData[cellKey],
             clicked: true,
@@ -199,10 +210,6 @@ export const useGameStore = create<GameState & Actions>()(
           } else {
             state.darknessData = { ...state.darknessData, [darknessKey]: state.darknessData[darknessKey] + 1 };
           }
-        }
-        if (cellValue === 'M') {
-          // state.takeLife();
-          state.lives -= 1;
         }
       });
     },
