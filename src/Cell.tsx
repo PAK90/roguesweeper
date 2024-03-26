@@ -3,28 +3,27 @@ import calculateCellNumber from './helpers/calculateCellNumber.ts';
 import React from 'react';
 
 function Cell({ x, y }: { x: number; y: number }) {
-  // const currentMines = useGameStore((state) => state.getCurrentLayerMines());
-  // const currentClicked = useGameStore((state) => state.getCurrentLayerClicks());
-  // const currentFlags = useGameStore((state) => state.getCurrentLayerFlags());
   const currentCellData = useGameStore((state) => state.cellData);
-  const currentDarknessData = useGameStore((state) => state.darknessData);
+  // const currentDarknessData = useGameStore((state) => state.darknessData);
   const clickCell = useGameStore((state) => state.clickCell);
   const toggleFlag = useGameStore((state) => state.addFlag);
   // const allClicked = useGameStore((state) => state.clicked);
   const currentLayer = useGameStore((state) => state.layer);
 
-  // if (!currentMines) return;
-
-  // console.log(currentDarknessData);
-  const isCellDark = currentDarknessData[`${x}:${y}`] !== currentLayer && currentLayer !== 0;
   const cellKey = `${x}:${y}:${currentLayer}`;
-  // const isClicked = currentClicked.findIndex((cc) => cc[0] === x && cc[1] === y) !== -1;
-  // const hasFlag = currentFlags.findIndex((cc) => cc[0] === x && cc[1] === y) !== -1;
+  let isCellDark = false;
+  for (let i = 0; i < currentLayer; i++) {
+    // descend through the layers to check if this cell in that layer is clicked
+    // if not, it's dark
+    if (!currentCellData[`${x}:${y}:${i}`]?.clicked) {
+      isCellDark = true;
+      break;
+    }
+  }
   const isClicked = currentCellData[cellKey]?.clicked;
   const hasFlag = currentCellData[cellKey]?.flagged;
 
   let display = '';
-  // const hasMine = currentMines.findIndex((cm) => cm[0] === x && cm[1] === y) !== -1;
   const hasMine = currentCellData[cellKey]?.mined;
 
   if (!hasMine) {

@@ -155,14 +155,14 @@ export const useGameStore = create<GameState & Actions>()(
             // make sure we're not re-checking the same dang cell
             if (state.cellData[blankCellKey]?.clicked || distanceToOriginal > 6) return;
             // add this cell to obj of non-dark ones
-            if (!state.darknessData[`${coord[0]}:${coord[1]}`]) {
-              state.darknessData = { ...state.darknessData, [`${coord[0]}:${coord[1]}`]: 1 };
-            } else {
-              state.darknessData = {
-                ...state.darknessData,
-                [`${coord[0]}:${coord[1]}`]: state.darknessData[`${coord[0]}:${coord[1]}`] + 1,
-              };
-            }
+            // if (!state.darknessData[`${coord[0]}:${coord[1]}`]) {
+            //   state.darknessData = { ...state.darknessData, [`${coord[0]}:${coord[1]}`]: 1 };
+            // } else {
+            //   state.darknessData = {
+            //     ...state.darknessData,
+            //     [`${coord[0]}:${coord[1]}`]: state.darknessData[`${coord[0]}:${coord[1]}`] + 1,
+            //   };
+            // }
 
             state.cellData[blankCellKey] = {
               ...state.cellData[blankCellKey],
@@ -204,12 +204,12 @@ export const useGameStore = create<GameState & Actions>()(
             clicked: true,
           };
 
-          const darknessKey = `${c[0]}:${c[1]}`;
-          if (!state.darknessData[darknessKey]) {
-            state.darknessData = { ...state.darknessData, [darknessKey]: 1 };
-          } else {
-            state.darknessData = { ...state.darknessData, [darknessKey]: state.darknessData[darknessKey] + 1 };
-          }
+          // const darknessKey = `${c[0]}:${c[1]}`;
+          // if (!state.darknessData[darknessKey]) {
+          //   state.darknessData = { ...state.darknessData, [darknessKey]: 1 };
+          // } else {
+          //   state.darknessData = { ...state.darknessData, [darknessKey]: state.darknessData[darknessKey] + 1 };
+          // }
         }
       });
     },
