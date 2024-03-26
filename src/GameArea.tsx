@@ -27,7 +27,7 @@ function GameArea() {
     <>
       <ShopDialog />
       <div className="flex justify-center p-3">
-        <label>
+        <label className="p-1">
           Width:{' '}
           <input
             type="number"
@@ -38,7 +38,7 @@ function GameArea() {
             onChange={(e) => setWidth(parseInt(e.target.value))}
           />
         </label>
-        <label>
+        <label className="p-1">
           Height:{' '}
           <input
             type="number"
@@ -49,15 +49,26 @@ function GameArea() {
             onChange={(e) => setHeight(parseInt(e.target.value))}
           />
         </label>
-        <p>{`Combo: ${currentCombo}`}</p>
-        <p>{`Lives: ${currentLives}`}</p>
-        <p>{`Clicks: ${currentClicksLeft}`}</p>
-        <button onClick={resetGame}>New Game</button>
-        <button onClick={() => setLayer(currentLayer - 1)} disabled={currentLayer < 1}>
+        <p className="p-1 rounded border-green-200 border-2">{`Combo: ${currentCombo}`}</p>
+        <p className="m-1 p-0.5">{`Lives: ${currentLives}`}</p>
+        <p className="m-1 p-0.5">{`Clicks: ${currentClicksLeft}`}</p>
+        <button className="m-1 p-0.5 rounded bg-green-200 duration-100 hover:bg-green-300 " onClick={resetGame}>
+          New Game
+        </button>
+        <button
+          className="m-1 p-0.5 rounded bg-green-200 duration-100 hover:bg-green-300 "
+          onClick={() => setLayer(currentLayer - 1)}
+          disabled={currentLayer < 1}
+        >
           Layer Up
         </button>
-        <p>{currentLayer + 1}</p>
-        <button onClick={() => setLayer(currentLayer + 1)}>Layer Down</button>
+        <p className="m-1 p-0.5">{currentLayer + 1}</p>
+        <button
+          className="m-1 p-0.5 rounded bg-green-200 duration-100 hover:bg-green-300 "
+          onClick={() => setLayer(currentLayer + 1)}
+        >
+          Layer Down
+        </button>
       </div>
       <div className="w-full flex justify-center">
         {range(gridWidth).map((_, rIx) => {

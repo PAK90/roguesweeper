@@ -144,49 +144,82 @@ export const useGameStore = create<GameState & Actions>()(
         state.clicks -= 1;
         const cellKey = `${c[0]}:${c[1]}:${state.layer}`;
         // if the cell's value is 0, we want to 'click' all adjacent 0 cells, and to do this recursively.
-        if (cellValue === '') {
-          // clear the combo counter
-          state.comboCount = 0;
-          const clickAdjacent = (coord: Coordinate) => {
-            // don't expand the auto click zone beyond a radius of N cells
-            // this is partially due to the future infinite grid being a thing
-            const distanceToOriginal = Math.sqrt(Math.abs(c[0] - coord[0]) ** 2 + Math.abs(c[1] - coord[1]) ** 2);
-            const blankCellKey = `${coord[0]}:${coord[1]}:${state.layer}`;
-            // make sure we're not re-checking the same dang cell
-            if (state.cellData[blankCellKey]?.clicked || distanceToOriginal > 6) return;
-            // add this cell to obj of non-dark ones
-            // if (!state.darknessData[`${coord[0]}:${coord[1]}`]) {
-            //   state.darknessData = { ...state.darknessData, [`${coord[0]}:${coord[1]}`]: 1 };
-            // } else {
-            //   state.darknessData = {
-            //     ...state.darknessData,
-            //     [`${coord[0]}:${coord[1]}`]: state.darknessData[`${coord[0]}:${coord[1]}`] + 1,
-            //   };
-            // }
+        const floodClick = (coord: Coordinate, numberToPropagate: number) => {
+          // don't expand the auto click zone beyond a radius of N cells
+          // this is partially due to the future infinite grid being a thing
+          const distanceToOriginal = Math.sqrt(Math.abs(c[0] - coord[0]) ** 2 + Math.abs(c[1] - coord[1]) ** 2);
+          const blankCellKey = `${coord[0]}:${coord[1]}:${state.layer}`;
+          // make sure we're not re-checking the same dang cell
+          if (state.cellData[blankCellKey]?.clicked || distanceToOriginal > 6) return;
+          // add this cell to obj of non-dark ones
+          // if (!state.darknessData[`${coord[0]}:${coord[1]}`]) {
+          //   state.darknessData = { ...state.darknessData, [`${coord[0]}:${coord[1]}`]: 1 };
+          // } else {
+          //   state.darknessData = {
+          //     ...state.darknessData,
+          //     [`${coord[0]}:${coord[1]}`]: state.darknessData[`${coord[0]}:${coord[1]}`] + 1,
+          //   };
+          // }
 
-            state.cellData[blankCellKey] = {
-              ...state.cellData[blankCellKey],
-              clicked: true,
-            };
+          state.cellData[blankCellKey] = {
+            ...state.cellData[blankCellKey],
+            clicked: true,
+          };
 
-            const isThisCellEmpty =
-              calculateCellNumber({ x: coord[0], y: coord[1] }, state.cellData, state.layer) === 0;
+          const doesThisCellSatisfyCellNumber =
+            calculateCellNumber({ x: coord[0], y: coord[1] }, state.cellData, state.layer) === numberToPropagate;
 
-            for (let i = coord[0] - 1; i <= coord[0] + 1; i++) {
-              for (let j = coord[1] - 1; j <= coord[1] + 1; j++) {
+          for (let i = coord[0] - 1; i <= coord[0] + 1; i++) {
+            for (let j = coord[1] - 1; j <= coord[1] + 1; j++) {
+              if (
+                doesThisCellSatisfyCellNumber &&
+                i >= 0 &&
+                i < state.width[state.layer] &&
+                j >= 0 &&
+                j < state.height[state.layer]
+              ) {
+                floodClick([i, j], numberToPropagate);
+              }
+            }
+          }
+        };
+
+        let floodClicksDone = 0;
+        const linearFloodClick = (coord: Coordinate, howLongToGo: number) => {
+          if (floodClicksDone > howLongToGo) return;
+          floodClicksDone++;
+
+          const thisCellKey = `${coord[0]}:${coord[1]}:${state.layer}`;
+
+          state.cellData[thisCellKey] = {
+            ...state.cellData[thisCellKey],
+            clicked: true,
+          };
+
+          // check every adjacent cell to make sure it's not clear cell
+          for (let i = coord[0] - 1; i <= coord[0] + 1; i++) {
+            for (let j = coord[1] - 1; j <= coord[1] + 1; j++) {
+              if (i >= 0 && i < state.width[state.layer] && j >= 0 && j < state.height[state.layer]) {
+                const doesThisPropagate = calculateCellNumber({ x: i, y: j }, state.cellData, state.layer) !== 0;
                 if (
-                  isThisCellEmpty &&
-                  i >= 0 &&
-                  i < state.width[state.layer] &&
-                  j >= 0 &&
-                  j < state.height[state.layer]
+                  doesThisPropagate &&
+                  !state.cellData[`${i}:${j}:${state.layer}`]?.mined &&
+                  !state.cellData[`${i}:${j}:${state.layer}`]?.clicked
                 ) {
-                  clickAdjacent([i, j]);
+                  linearFloodClick([i, j], howLongToGo);
+                  break;
                 }
               }
             }
-          };
-          clickAdjacent(c);
+          }
+        };
+
+        if (cellValue === '') {
+          // clear the combo counter
+          state.comboCount = 0;
+          floodClick(c, 0);
+        } else if (cellValue !== 'M') {
+          linearFloodClick(c, state.comboCount);
         }
 
         // solved (I think); the clear origin cell gets added twice; once in the recursion and another time here.
