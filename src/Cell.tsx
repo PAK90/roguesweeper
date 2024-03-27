@@ -9,6 +9,7 @@ function Cell({ x, y }: { x: number; y: number }) {
   const toggleFlag = useGameStore((state) => state.addFlag);
   // const allClicked = useGameStore((state) => state.clicked);
   const currentLayer = useGameStore((state) => state.layer);
+  const currentPosition = useGameStore((state) => state.position);
 
   const cellKey = `${x}:${y}:${currentLayer}`;
   let isCellDark = false;
@@ -22,6 +23,7 @@ function Cell({ x, y }: { x: number; y: number }) {
   }
   const isClicked = currentCellData[cellKey]?.clicked;
   const hasFlag = currentCellData[cellKey]?.flagged;
+  const isAtPosition = currentPosition[0] === x && currentPosition[1] === y;
 
   let display = '';
   const hasMine = currentCellData[cellKey]?.mined;
@@ -64,7 +66,9 @@ function Cell({ x, y }: { x: number; y: number }) {
   };
 
   return (
-    <div className={`w-8 h-8 border-2 border-sky-200 bg-gray-50 ${colourMap[display as keyof typeof colourMap]}`}>
+    <div
+      className={`w-8 h-8 ${isAtPosition ? 'border-4' : 'border-2'} ${isAtPosition ? 'border-green-400' : 'border-sky-200'} bg-gray-50 ${colourMap[display as keyof typeof colourMap]}`}
+    >
       {display}
     </div>
   );

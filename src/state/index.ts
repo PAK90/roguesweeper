@@ -37,6 +37,7 @@ export type GameState = {
   height: number[];
   layer: number;
   comboCount: number;
+  position: Coordinate;
   startingMines: number;
   cellData: CellUpdateData;
   darknessData: { [key: string]: number };
@@ -51,30 +52,28 @@ type Actions = {
   setStartingMines: (sm: number) => void;
   takeLife: () => void;
   reduceClicks: () => void;
-  // addMine: (m: Mine) => void;
-  // setMines: (m: CellUpdateData) => void;
   setLayer: (v: number) => void;
   clickCell: (c: Coordinate, cellValue: string) => void;
   addFlag: (c: Coordinate) => void;
-
-  // getCurrentLayerMines: () => CellData;
-  // getCurrentLayerClicks: () => CellData;
-  // getCurrentLayerFlags: () => CellData;
 
   // useItem: (i: Item) => void;
 
   resetGame: () => void;
 };
 
+const WIDTH = 30;
+const HEIGHT = 16;
+
 export const useGameStore = create<GameState & Actions>()(
   immer((set) => ({
     shopping: false,
-    width: [30],
-    height: [30],
-    startingMines: 99,
+    width: [WIDTH],
+    height: [HEIGHT],
+    startingMines: 75,
     lives: 3,
     clicks: 30,
     layer: 0,
+    position: [Math.floor(WIDTH / 2), Math.floor(HEIGHT / 2)],
     comboCount: 0,
     cellData: {},
     darknessData: {},
@@ -142,6 +141,8 @@ export const useGameStore = create<GameState & Actions>()(
       set((state) => {
         // take a click
         state.clicks -= 1;
+        // set current position at this click
+        state.position = c;
         const cellKey = `${c[0]}:${c[1]}:${state.layer}`;
         // if the cell's value is 0, we want to 'click' all adjacent 0 cells, and to do this recursively.
         const floodClick = (coord: Coordinate, numberToPropagate: number) => {
@@ -188,6 +189,7 @@ export const useGameStore = create<GameState & Actions>()(
         const linearFloodClick = (coord: Coordinate, howLongToGo: number) => {
           if (floodClicksDone > howLongToGo) return;
           floodClicksDone++;
+          state.comboCount++;
 
           const thisCellKey = `${coord[0]}:${coord[1]}:${state.layer}`;
 
@@ -207,7 +209,7 @@ export const useGameStore = create<GameState & Actions>()(
                   !state.cellData[`${i}:${j}:${state.layer}`]?.clicked
                 ) {
                   linearFloodClick([i, j], howLongToGo);
-                  break;
+                  // break;
                 }
               }
             }
@@ -219,7 +221,7 @@ export const useGameStore = create<GameState & Actions>()(
           state.comboCount = 0;
           floodClick(c, 0);
         } else if (cellValue !== 'M') {
-          linearFloodClick(c, state.comboCount);
+          // linearFloodClick(c, state.comboCount);
         }
 
         // solved (I think); the clear origin cell gets added twice; once in the recursion and another time here.
