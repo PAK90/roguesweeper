@@ -38,6 +38,7 @@ export type GameState = {
   layer: number;
   comboCount: number;
   position: Coordinate;
+  clickRange: 3;
   startingMines: number;
   cellData: CellUpdateData;
   darknessData: { [key: string]: number };
@@ -75,6 +76,7 @@ export const useGameStore = create<GameState & Actions>()(
     layer: 0,
     position: [Math.floor(WIDTH / 2), Math.floor(HEIGHT / 2)],
     comboCount: 0,
+    clickRange: 3,
     cellData: {},
     darknessData: {},
     mineIndex: [],

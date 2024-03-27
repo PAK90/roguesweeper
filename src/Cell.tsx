@@ -10,6 +10,7 @@ function Cell({ x, y }: { x: number; y: number }) {
   // const allClicked = useGameStore((state) => state.clicked);
   const currentLayer = useGameStore((state) => state.layer);
   const currentPosition = useGameStore((state) => state.position);
+  const currentClickRange = useGameStore((state) => state.clickRange);
 
   const cellKey = `${x}:${y}:${currentLayer}`;
   let isCellDark = false;
@@ -24,6 +25,9 @@ function Cell({ x, y }: { x: number; y: number }) {
   const isClicked = currentCellData[cellKey]?.clicked;
   const hasFlag = currentCellData[cellKey]?.flagged;
   const isAtPosition = currentPosition[0] === x && currentPosition[1] === y;
+  const isWithinClickRange =
+    Math.floor(Math.sqrt(Math.abs(x - currentPosition[0]) ** 2 + Math.abs(y - currentPosition[1]) ** 2)) <=
+    currentClickRange;
 
   let display = '';
   const hasMine = currentCellData[cellKey]?.mined;
@@ -37,6 +41,7 @@ function Cell({ x, y }: { x: number; y: number }) {
   }
 
   const clickThis = (e: React.MouseEvent) => {
+    if (!isWithinClickRange) return;
     if (e.type === 'contextmenu') {
       e.preventDefault();
       // right click, add a flag.
@@ -51,7 +56,7 @@ function Cell({ x, y }: { x: number; y: number }) {
       <div
         onClick={clickThis}
         onContextMenu={clickThis}
-        className={`w-8 h-8 ${isCellDark ? 'bg-black' : hasFlag ? 'bg-red-500' : 'bg-blue-200'} rounded-l`}
+        className={`w-8 h-8 ${isCellDark ? 'bg-black' : hasFlag ? 'bg-red-500' : isWithinClickRange ? 'bg-green-300' : 'bg-blue-200'} rounded-l`}
       />
     );
   }
@@ -67,7 +72,10 @@ function Cell({ x, y }: { x: number; y: number }) {
 
   return (
     <div
-      className={`w-8 h-8 ${isAtPosition ? 'border-4' : 'border-2'} ${isAtPosition ? 'border-green-400' : 'border-sky-200'} bg-gray-50 ${colourMap[display as keyof typeof colourMap]}`}
+      className={`w-8 h-8 
+        ${isAtPosition ? 'border-4' : 'border-2'} 
+        ${isAtPosition || isWithinClickRange ? 'border-green-400' : 'border-sky-200'}
+         bg-gray-50 ${colourMap[display as keyof typeof colourMap]}`}
     >
       {display}
     </div>
