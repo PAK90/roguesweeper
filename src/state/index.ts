@@ -265,6 +265,7 @@ export const useGameStore = create<GameState & Actions>()(
         state.layer = 0;
         state.lives = 3;
         state.clicks = 30;
+        state.position = [Math.floor(state.width[0] / 2), Math.floor(state.height[0] / 2)];
       });
     },
   })),
