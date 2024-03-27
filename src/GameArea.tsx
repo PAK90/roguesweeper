@@ -7,6 +7,7 @@ import ShopDialog from './ShopDialog.tsx';
 function GameArea() {
   const setWidth = useGameStore((state) => state.setWidth);
   const setHeight = useGameStore((state) => state.setHeight);
+  const setClickRange = useGameStore((state) => state.setClickRange);
 
   const resetGame = useGameStore((state) => state.resetGame);
 
@@ -14,6 +15,7 @@ function GameArea() {
   const currentLayer = useGameStore((state) => state.layer);
   const currentLives = useGameStore((state) => state.lives);
   const currentClicksLeft = useGameStore((state) => state.clicks);
+  const currentClickRange = useGameStore((state) => state.clickRange);
 
   const setLayer = useGameStore((state) => state.setLayer);
   const gridHeight = useGameStore((state) => state.height[currentLayer]);
@@ -47,6 +49,17 @@ function GameArea() {
             className=""
             value={gridHeight}
             onChange={(e) => setHeight(parseInt(e.target.value))}
+          />
+        </label>
+        <label className="p-1">
+          Click range:{' '}
+          <input
+            type="number"
+            min={1}
+            max={30}
+            className=""
+            value={currentClickRange}
+            onChange={(e) => setClickRange(parseInt(e.target.value))}
           />
         </label>
         <p className="p-1 rounded border-green-200 border-2">{`Combo: ${currentCombo}`}</p>

@@ -50,6 +50,7 @@ type Actions = {
   toggleShop: () => void;
   setWidth: (w: number) => void;
   setHeight: (h: number) => void;
+  setClickRange: (cr: number) => void;
   setStartingMines: (sm: number) => void;
   takeLife: () => void;
   reduceClicks: () => void;
@@ -92,6 +93,10 @@ export const useGameStore = create<GameState & Actions>()(
     setHeight: (h: number) =>
       set((state) => {
         state.height[0] = h;
+      }),
+    setClickRange: (cr: number) =>
+      set((state) => {
+        state.clickRange = cr;
       }),
     setStartingMines: (sm: number) =>
       set((state) => {
