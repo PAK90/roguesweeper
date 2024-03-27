@@ -38,7 +38,7 @@ export type GameState = {
   layer: number;
   comboCount: number;
   position: Coordinate;
-  clickRange: 3;
+  clickRange: number;
   startingMines: number;
   cellData: CellUpdateData;
   darknessData: { [key: string]: number };
