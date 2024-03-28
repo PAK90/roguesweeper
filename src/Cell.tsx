@@ -62,6 +62,8 @@ function Cell({ x, y }: { x: number; y: number }) {
     if (!isWithinClickRange) return;
     if (isGilded) {
       ungildCell([x, y]);
+    } else if (isClicked && !hasFlag) {
+      clickCell([x, y], display);
     }
   };
 
