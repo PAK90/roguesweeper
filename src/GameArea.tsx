@@ -14,6 +14,7 @@ function GameArea() {
   const currentCombo = useGameStore((state) => state.comboCount);
   const currentLayer = useGameStore((state) => state.layer);
   const currentLives = useGameStore((state) => state.lives);
+  const currentGold = useGameStore((state) => state.gold);
   const currentClicksLeft = useGameStore((state) => state.clicks);
   const currentClickRange = useGameStore((state) => state.clickRange);
 
@@ -65,6 +66,7 @@ function GameArea() {
         <p className="p-1 rounded border-green-200 border-2">{`Combo: ${currentCombo}`}</p>
         <p className="m-1 p-0.5">{`Lives: ${currentLives}`}</p>
         <p className="m-1 p-0.5">{`Clicks: ${currentClicksLeft}`}</p>
+        <p className="m-1 p-0.5">{`Gold: ${currentGold}`}</p>
         <button className="m-1 p-0.5 rounded bg-green-200 duration-100 hover:bg-green-300 " onClick={resetGame}>
           New Game
         </button>

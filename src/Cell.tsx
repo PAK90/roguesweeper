@@ -12,6 +12,8 @@ function Cell({ x, y }: { x: number; y: number }) {
   const currentPosition = useGameStore((state) => state.position);
   const currentClickRange = useGameStore((state) => state.clickRange);
 
+  const ungildCell = useGameStore((state) => state.consumeGold);
+
   const cellKey = `${x}:${y}:${currentLayer}`;
   let isCellDark = false;
   for (let i = 0; i < currentLayer; i++) {
@@ -24,6 +26,7 @@ function Cell({ x, y }: { x: number; y: number }) {
   }
   const isClicked = currentCellData[cellKey]?.clicked;
   const hasFlag = currentCellData[cellKey]?.flagged;
+  const isGilded = currentCellData[cellKey]?.gold;
   const isAtPosition = currentPosition[0] === x && currentPosition[1] === y;
   const isWithinClickRange =
     Math.floor(Math.sqrt(Math.abs(x - currentPosition[0]) ** 2 + Math.abs(y - currentPosition[1]) ** 2)) <=
@@ -33,9 +36,13 @@ function Cell({ x, y }: { x: number; y: number }) {
   const hasMine = currentCellData[cellKey]?.mined;
 
   if (!hasMine) {
-    const cellNum = calculateCellNumber({ x, y }, currentCellData, currentLayer);
-    // only show number if it's not 0
-    if (cellNum) display = cellNum.toString();
+    if (isGilded) {
+      display = 'G';
+    } else {
+      const cellNum = calculateCellNumber({ x, y }, currentCellData, currentLayer);
+      // only show number if it's not 0
+      if (cellNum) display = cellNum.toString();
+    }
   } else {
     display = 'M';
   }
@@ -51,6 +58,13 @@ function Cell({ x, y }: { x: number; y: number }) {
     }
   };
 
+  const clickThisClearCell = () => {
+    if (!isWithinClickRange) return;
+    if (isGilded) {
+      ungildCell([x, y]);
+    }
+  };
+
   if (!isClicked) {
     return (
       <div
@@ -63,7 +77,7 @@ function Cell({ x, y }: { x: number; y: number }) {
 
   const colourMap = {
     M: 'text-black-500',
-    $: 'text-orange-400',
+    G: 'text-orange-400',
     '1': 'text-blue-500',
     '2': 'text-green-500',
     '3': 'text-red-500',
@@ -72,6 +86,7 @@ function Cell({ x, y }: { x: number; y: number }) {
 
   return (
     <div
+      onClick={clickThisClearCell}
       className={`w-8 h-8 
         ${isAtPosition ? 'border-4' : 'border-2'} 
         ${isAtPosition || isWithinClickRange ? 'border-green-400' : 'border-sky-200'}

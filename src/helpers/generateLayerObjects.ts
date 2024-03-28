@@ -1,50 +1,47 @@
-import { CellUpdateData } from '../state';
+import { CellFragmentData, CellUpdateData } from '../state';
 import Rand from 'rand-seed';
 
-// const equalsCheck = (a: Mine | Coordinate, b: Mine | Coordinate) =>
-//   a.length === b.length && a.every((v, i) => v === b[i]);
 export default function generateLayerObjects(
   gridWidth: number,
   gridHeight: number,
-  totalMines: number,
+  totalObjects: number,
   layer: number,
-): { mines: CellUpdateData; mineIndex: string[] } {
-  let mines: CellUpdateData = {};
-  const mineIndex: string[] = [];
-
+  cellDataOverride: CellFragmentData,
+): { objects: CellUpdateData; objectIndex: string[] } {
+  let objects: CellUpdateData = {};
+  const objectIndex: string[] = [];
   const random = new Rand();
-  for (let i = 0; i < totalMines; i++) {
-    const makeNewMine = (): { cellData: CellUpdateData; indexData: string } => {
-      // const mineX = Math.floor(random.next() * gridWidth);
-      // const mineY = Math.floor(random.next() * gridHeight);
-      // return [mineX, mineY];
-      const mineX = Math.floor(random.next() * gridWidth);
-      const mineY = Math.floor(random.next() * gridHeight);
-      return {
-        cellData: {
-          [`${mineX}:${mineY}:${layer}`]: {
-            mined: true,
-            clicked: false,
-            flagged: false,
-          },
-        },
-        indexData: `${mineX}:${mineY}`,
-      };
-    };
-    let newMineData = makeNewMine();
 
-    // check that mines doesn't already contain this x/y pair.
-    // while (mines.some((m) => equalsCheck(m, newMine))) {
-    //   console.log('~~~ had to dedup! ~~~');
-    //   newMine = makeNewMine();
-    // }
-    while (mines[Object.keys(newMineData.cellData)[0]]) {
+  // TODO: fix this up so it can be called once with multiple types of things to make
+
+  const makeNewObjectOfInterest = (): { cellData: CellUpdateData; indexData: string } => {
+    const xPos = Math.floor(random.next() * gridWidth);
+    const yPos = Math.floor(random.next() * gridHeight);
+    return {
+      cellData: {
+        [`${xPos}:${yPos}:${layer}`]: {
+          mined: false,
+          clicked: false,
+          flagged: false,
+          gold: 0,
+          darkness: 15,
+          ...cellDataOverride,
+        },
+      },
+      indexData: `${xPos}:${yPos}`,
+    };
+  };
+
+  for (let i = 0; i < totalObjects; i++) {
+    let newObjectData = makeNewObjectOfInterest();
+
+    while (objects[Object.keys(newObjectData.cellData)[0]]) {
       console.log('~~~ had to dedup! ~~~');
-      newMineData = makeNewMine();
+      newObjectData = makeNewObjectOfInterest();
     }
-    mines = { ...mines, ...newMineData.cellData };
-    mineIndex.push(newMineData.indexData);
+    objects = { ...objects, ...newObjectData.cellData };
+    objectIndex.push(newObjectData.indexData);
   }
-  console.log(mines);
-  return { mines, mineIndex };
+  console.log(objects);
+  return { objects, objectIndex };
 }
