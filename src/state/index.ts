@@ -155,8 +155,8 @@ export const useGameStore = create<GameState & Actions>()(
         state.cellData = { ...state.cellData, ...mines };
         state.mineIndex[state.layer] = mineIndex;
 
-        // gold?
-        const { objects: gold, objectIndex: goldIndex } = generateLayerObjects(
+        // gold? goldIndex?
+        const { objects: gold } = generateLayerObjects(
           Math.floor(state.height[0] * layerScaling),
           Math.floor(state.width[0] * layerScaling),
           GOLD,
