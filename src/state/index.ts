@@ -264,7 +264,9 @@ export const useGameStore = create<GameState & Actions>()(
             state.comboCount += parseInt(cellValue);
           } else {
             state.comboCount = 0;
-            state.lives -= 1;
+            if (cellValue !== 'G') {
+              state.lives -= 1;
+            }
           }
           state.cellData[cellKey] = {
             ...state.cellData[cellKey],
