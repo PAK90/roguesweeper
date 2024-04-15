@@ -184,6 +184,8 @@ export const useGameStore = create<GameState & Actions>()(
         // set current position at this click
         state.position = c;
         const cellKey = `${c[0]}:${c[1]}:${state.layer}`;
+        // remember if we've clicked this already
+        const alreadyClicked = state.cellData[cellKey]?.clicked;
         // if the cell's value is 0, we want to 'click' all adjacent 0 cells, and to do this recursively.
         const floodClick = (coord: Coordinate, numberToPropagate: number) => {
           // don't expand the auto click zone beyond a radius of N cells
@@ -248,8 +250,9 @@ export const useGameStore = create<GameState & Actions>()(
         };
 
         if (cellValue === '') {
-          // clear the combo counter
-          state.comboCount = 0;
+          // for now let's not reset combo/mana when clicking on empty
+          // // clear the combo counter
+          // state.comboCount = 0;
           floodClick(c, 0);
         } else if (cellValue !== 'M') {
           // linearFloodClick(c, state.comboCount);
@@ -261,10 +264,15 @@ export const useGameStore = create<GameState & Actions>()(
           // increase the combo counter by the cell value
           if (cellValue !== 'M' && cellValue !== 'G') {
             // maybe have something to do with combo count when you hit a gold?
-            state.comboCount += parseInt(cellValue);
+            // if we've already clicked this cell, don't add combo! (unless some relic/unique in the future...)
+            if (!alreadyClicked) {
+              state.comboCount += parseInt(cellValue);
+            }
           } else {
-            state.comboCount = 0;
-            if (cellValue !== 'G') {
+            // nothing to do if it's purely not a number.
+            if (cellValue === 'M') {
+              // i.e. it's a mine.
+              state.comboCount = 0;
               state.lives -= 1;
             }
           }
@@ -289,6 +297,7 @@ export const useGameStore = create<GameState & Actions>()(
         state.cellData = { ...mines, ...gold };
         state.mineIndex[0] = mineIndex;
         state.darknessData = {};
+        state.comboCount = 0;
         state.layer = 0;
         state.lives = 3;
         state.clicks = 30;
