@@ -13,6 +13,7 @@ function Cell({ x, y }: { x: number; y: number }) {
   const currentClickRange = useGameStore((state) => state.clickRange);
 
   const ungildCell = useGameStore((state) => state.consumeGold);
+  const addToInventory = useGameStore((s) => s.addItemToInventory);
 
   const cellKey = `${x}:${y}:${currentLayer}`;
   let isCellDark = false;
@@ -62,6 +63,7 @@ function Cell({ x, y }: { x: number; y: number }) {
     if (!isWithinClickRange) return;
     if (isGilded) {
       ungildCell([x, y]);
+      addToInventory('Gold', 4);
     } else if (isClicked && !hasFlag) {
       clickCell([x, y], display);
     }

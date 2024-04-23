@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import calculateCellNumber from '../helpers/calculateCellNumber.ts';
 import generateLayerObjects from '../helpers/generateLayerObjects.ts';
+import { items } from '../items.ts';
 // import { Item } from '../items.ts';
 
 // export type Mine = [number, number];
@@ -39,11 +40,17 @@ export type CellUpdateData = {
   [key: string]: GildedCell | DarkCell | MinedCell | ClickedCell | FlaggedCell;
 };
 
+export type ItemData = {
+  name: string;
+  stackSize: number;
+};
+
 export type GameState = {
   shopping: boolean;
+  browsingInventory: boolean;
   lives: number;
   clicks: number;
-  gold: number;
+  inventory: ItemData[];
   width: number[];
   height: number[];
   layer: number;
@@ -59,6 +66,7 @@ export type GameState = {
 
 type Actions = {
   toggleShop: () => void;
+  toggleInventory: () => void;
   setWidth: (w: number) => void;
   setHeight: (h: number) => void;
   setClickRange: (cr: number) => void;
@@ -69,6 +77,8 @@ type Actions = {
   clickCell: (c: Coordinate, cellValue: string) => void;
   addFlag: (c: Coordinate) => void;
   consumeGold: (c: Coordinate) => void;
+
+  addItemToInventory: (itemName: string, n: number) => void;
 
   // useItem: (i: Item) => void;
 
@@ -83,12 +93,13 @@ const GOLD = 20;
 export const useGameStore = create<GameState & Actions>()(
   immer((set) => ({
     shopping: false,
+    browsingInventory: false,
     width: [WIDTH],
     height: [HEIGHT],
     startingMines: MINES,
     lives: 3,
     clicks: 30,
-    gold: 0,
+    inventory: [],
     layer: 0,
     position: [Math.floor(WIDTH / 2), Math.floor(HEIGHT / 2)],
     comboCount: 0,
@@ -100,12 +111,48 @@ export const useGameStore = create<GameState & Actions>()(
     consumeGold: (c: Coordinate) =>
       set((state) => {
         const cellKey = `${c[0]}:${c[1]}:${state.layer}`;
-        state.gold += state.cellData[cellKey].gold || 0;
+        // TODO: put gold into inventory... have to do it separately, this won't work.
+        // state.addItemToInventory('Gold', 1);
         state.cellData[cellKey].gold = 0;
+      }),
+    addItemToInventory: (itemName: string, n: number) =>
+      set((state) => {
+        // find the item's data in the items array
+        const item = items.find((i) => i.name === itemName);
+        if (!item) {
+          throw new Error("Couldn't find item");
+        }
+        // try to find an existing stack of this item
+        let existingStackIndex = -1;
+        for (let i = 0; i < state.inventory.length; i++) {
+          if (state.inventory[i].name === itemName && state.inventory[i].stackSize < item.maxStackSize) {
+            existingStackIndex = i;
+            break;
+          }
+        }
+
+        if (existingStackIndex >= 0) {
+          // e.g. already have a stack of gold of 3, adding 4, and max is 5, so the overflow will be 2
+          const stackOverflow = state.inventory[existingStackIndex].stackSize + n - item.maxStackSize;
+          if (stackOverflow > 0) {
+            state.inventory[existingStackIndex].stackSize = item.maxStackSize;
+            // call this function recursively to add another stack of this item
+            state.addItemToInventory(itemName, stackOverflow);
+          } else {
+            state.inventory[existingStackIndex].stackSize += n;
+          }
+        } else {
+          // add a new inventory item
+          state.inventory[state.inventory.length] = { name: itemName, stackSize: n };
+        }
       }),
     toggleShop: () =>
       set((state) => {
         state.shopping = !state.shopping;
+      }),
+    toggleInventory: () =>
+      set((state) => {
+        state.browsingInventory = !state.browsingInventory;
       }),
     setWidth: (w: number) =>
       set((state) => {
@@ -301,7 +348,7 @@ export const useGameStore = create<GameState & Actions>()(
         state.layer = 0;
         state.lives = 3;
         state.clicks = 30;
-        state.gold = 0;
+        state.inventory = [];
         state.position = [Math.floor(state.width[0] / 2), Math.floor(state.height[0] / 2)];
       });
     },

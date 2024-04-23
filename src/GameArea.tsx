@@ -3,6 +3,7 @@ import range from './helpers/range.ts';
 import Cell from './Cell.tsx';
 import { useEffect } from 'react';
 import ShopDialog from './ShopDialog.tsx';
+import InventoryDialog from './InventoryDialog.tsx';
 
 function GameArea() {
   const setWidth = useGameStore((state) => state.setWidth);
@@ -14,7 +15,6 @@ function GameArea() {
   const currentCombo = useGameStore((state) => state.comboCount);
   const currentLayer = useGameStore((state) => state.layer);
   const currentLives = useGameStore((state) => state.lives);
-  const currentGold = useGameStore((state) => state.gold);
   const currentClicksLeft = useGameStore((state) => state.clicks);
   const currentClickRange = useGameStore((state) => state.clickRange);
   const currentCellData = useGameStore((state) => state.cellData);
@@ -23,6 +23,8 @@ function GameArea() {
   const setLayer = useGameStore((state) => state.setLayer);
   const gridHeight = useGameStore((state) => state.height[currentLayer]);
   const gridWidth = useGameStore((state) => state.width[currentLayer]);
+
+  const setInventory = useGameStore((state) => state.toggleInventory);
 
   let nearestGold = '';
   const getNearestGold = () => {
@@ -61,7 +63,7 @@ function GameArea() {
       }
   };
   getNearestGold();
-  console.log(nearestGold);
+  // console.log(nearestGold);
 
   useEffect(() => {
     resetGame();
@@ -70,6 +72,7 @@ function GameArea() {
   return (
     <>
       <ShopDialog />
+      <InventoryDialog />
       <div className="flex justify-center p-3">
         <label className="p-1">
           Width:{' '}
@@ -105,10 +108,12 @@ function GameArea() {
           />
         </label>
         <p className="p-1 rounded border-green-200 border-2">{`Combo: ${currentCombo}`}</p>
-        <p className="p-1 rounded border-orange-400 border-2">{`Treasure direction: ${nearestGold}`}</p>
+        <p className="p-1 rounded border-orange-400 border-2">{`Treasure: ${nearestGold}`}</p>
         <p className="m-1 p-0.5">{`Lives: ${currentLives}`}</p>
         <p className="m-1 p-0.5">{`Clicks: ${currentClicksLeft}`}</p>
-        <p className="m-1 p-0.5">{`Gold: ${currentGold}`}</p>
+        <button className="m-1 p-0.5 rounded bg-amber-200 duration-100 hover:bg-amber-300 " onClick={setInventory}>
+          Open Inventory
+        </button>
         <button className="m-1 p-0.5 rounded bg-green-200 duration-100 hover:bg-green-300 " onClick={resetGame}>
           New Game
         </button>
