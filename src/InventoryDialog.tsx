@@ -10,7 +10,7 @@ function ShopDialog() {
       <div hidden={!browsing} className="bg-gray-200 shadow-2xl absolute top-1/4 left-1/4 w-1/2 h-1/2">
         HELLO I AM BAG
         {inventory.map((item) => {
-          return <div>{item.name}</div>;
+          return <div>{`${item.name} (${item.stackSize})`}</div>;
         })}
         <button onClick={setInventory}>Close Inventory</button>
       </div>

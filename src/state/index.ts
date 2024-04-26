@@ -122,28 +122,43 @@ export const useGameStore = create<GameState & Actions>()(
         if (!item) {
           throw new Error("Couldn't find item");
         }
-        // try to find an existing stack of this item
-        let existingStackIndex = -1;
+        // try to find existing stacks of this item
+        const existingStackIndices = [];
         for (let i = 0; i < state.inventory.length; i++) {
           if (state.inventory[i].name === itemName && state.inventory[i].stackSize < item.maxStackSize) {
-            existingStackIndex = i;
+            existingStackIndices.push(i);
             break;
           }
         }
 
-        if (existingStackIndex >= 0) {
-          // e.g. already have a stack of gold of 3, adding 4, and max is 5, so the overflow will be 2
-          const stackOverflow = state.inventory[existingStackIndex].stackSize + n - item.maxStackSize;
-          if (stackOverflow > 0) {
-            state.inventory[existingStackIndex].stackSize = item.maxStackSize;
-            // call this function recursively to add another stack of this item
-            state.addItemToInventory(itemName, stackOverflow);
-          } else {
-            state.inventory[existingStackIndex].stackSize += n;
+        // two while loops; one that goes on while we have items left to add,
+        // and an inner one that goes on while there's stacks left to add it to.
+        let itemsLeftToAdd = n;
+
+        while (itemsLeftToAdd > 0) {
+          while (existingStackIndices.length) {
+            // look at the first existing stack index and add to it
+            const stackOverflow =
+              state.inventory[existingStackIndices[0]].stackSize + itemsLeftToAdd - item.maxStackSize;
+            const itemsRemoved = item.maxStackSize - state.inventory[existingStackIndices[0]].stackSize;
+            if (stackOverflow > 0) {
+              state.inventory[existingStackIndices[0]].stackSize = item.maxStackSize;
+              existingStackIndices.splice(0, 1);
+              itemsLeftToAdd -= itemsRemoved;
+            } else {
+              state.inventory[existingStackIndices[0]].stackSize += itemsLeftToAdd;
+              itemsLeftToAdd = 0;
+              break;
+            }
           }
-        } else {
-          // add a new inventory item
-          state.inventory[state.inventory.length] = { name: itemName, stackSize: n };
+          if (itemsLeftToAdd >= item.maxStackSize) {
+            // TODO: this just staples a new inventory info object onto the end of the array; account for spaces
+            state.inventory[state.inventory.length] = { name: itemName, stackSize: item.maxStackSize };
+            itemsLeftToAdd -= item.maxStackSize;
+          } else if (itemsLeftToAdd > 0) {
+            state.inventory[state.inventory.length] = { name: itemName, stackSize: itemsLeftToAdd };
+            itemsLeftToAdd = 0;
+          }
         }
       }),
     toggleShop: () =>
