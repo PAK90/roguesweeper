@@ -20,11 +20,6 @@ export default function generateLayerObjects(
     return {
       cellData: {
         [`${xPos}:${yPos}:${layer}`]: {
-          mined: false,
-          clicked: false,
-          flagged: false,
-          gold: 0,
-          darkness: 15,
           ...cellDataOverride,
         },
       },
