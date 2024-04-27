@@ -3,6 +3,8 @@ import { immer } from 'zustand/middleware/immer';
 import calculateCellNumber from '../helpers/calculateCellNumber.ts';
 import generateLayerObjects from '../helpers/generateLayerObjects.ts';
 import { items } from '../items.ts';
+import generateLayerObjectV2 from '../helpers/generateLayerObjectsV2.ts';
+import cell from '../Cell.tsx';
 // import { Item } from '../items.ts';
 
 // export type Mine = [number, number];
@@ -10,34 +12,44 @@ export type Coordinate = [number, number];
 export type Flag = [number, number];
 export type Mines = { [key: string]: boolean };
 
+// interface BaseCell {
+//   mined?: boolean;
+//   clicked?: boolean;
+//   flagged?: boolean;
+//   darkness?: number;
+//   gold?: number;
+// }
+
 interface BaseCell {
-  mined?: boolean;
   clicked?: boolean;
-  flagged?: boolean;
   darkness?: number;
-  gold?: number;
+  aboveCell?: 'FLAG' | 'EMPTY';
+  belowCell?: 'MINE' | 'GOLD' | 'DOOR' | 'EMPTY';
 }
 
 interface MinedCell extends BaseCell {
-  mined: true;
+  belowCell: 'MINE';
 }
 interface ClickedCell extends BaseCell {
   clicked: true;
 }
 interface FlaggedCell extends BaseCell {
-  flagged: true;
+  aboveCell: 'FLAG';
 }
 interface DarkCell extends BaseCell {
   darkness: number;
 }
 interface GildedCell extends BaseCell {
-  gold: number;
+  belowCell: 'GOLD';
+}
+interface DoorCell extends BaseCell {
+  belowCell: 'DOOR';
 }
 
-export type CellFragmentData = GildedCell | DarkCell | MinedCell | ClickedCell | FlaggedCell;
+export type CellFragmentData = GildedCell | DarkCell | MinedCell | ClickedCell | FlaggedCell | DoorCell;
 
 export type CellUpdateData = {
-  [key: string]: GildedCell | DarkCell | MinedCell | ClickedCell | FlaggedCell;
+  [key: string]: GildedCell | DarkCell | MinedCell | ClickedCell | FlaggedCell | DoorCell;
 };
 
 export type ItemData = {
@@ -113,7 +125,7 @@ export const useGameStore = create<GameState & Actions>()(
         const cellKey = `${c[0]}:${c[1]}:${state.layer}`;
         // TODO: put gold into inventory... have to do it separately, this won't work.
         // state.addItemToInventory('Gold', 1);
-        state.cellData[cellKey].gold = 0;
+        state.cellData[cellKey].belowCell = 'EMPTY';
       }),
     addItemToInventory: (itemName: string, n: number) =>
       set((state) => {
@@ -207,35 +219,48 @@ export const useGameStore = create<GameState & Actions>()(
         if (!state.width[state.layer]) {
           state.width[state.layer] = Math.floor(state.width[0] * layerScaling);
         }
-        const { objects: mines, objectIndex: mineIndex } = generateLayerObjects(
-          Math.floor(state.height[0] * layerScaling),
-          Math.floor(state.width[0] * layerScaling),
-          Math.floor(state.startingMines * layerScaling ** 2),
-          v,
-          { mined: true },
-        );
-        state.cellData = { ...state.cellData, ...mines };
-        state.mineIndex[state.layer] = mineIndex;
-
-        // gold? goldIndex?
-        const { objects: gold } = generateLayerObjects(
-          Math.floor(state.height[0] * layerScaling),
-          Math.floor(state.width[0] * layerScaling),
-          GOLD,
-          v,
-          { gold: 5 },
-        );
-        state.cellData = { ...state.cellData, ...gold };
+        // const { objects: mines, objectIndex: mineIndex } = generateLayerObjects(
+        //   Math.floor(state.height[0] * layerScaling),
+        //   Math.floor(state.width[0] * layerScaling),
+        //   Math.floor(state.startingMines * layerScaling ** 2),
+        //   v,
+        //   { mined: true },
+        // );
+        // state.cellData = { ...state.cellData, ...mines };
         // state.mineIndex[state.layer] = mineIndex;
+        //
+        // // gold? goldIndex?
+        // const { objects: gold } = generateLayerObjects(
+        //   Math.floor(state.height[0] * layerScaling),
+        //   Math.floor(state.width[0] * layerScaling),
+        //   GOLD,
+        //   v,
+        //   { gold: 5 },
+        // );
+        // state.cellData = { ...state.cellData, ...gold };
+        // state.mineIndex[state.layer] = mineIndex;
+        const { objectResults, indices } = generateLayerObjectV2(
+          [
+            { name: 'GOLD', frequency: 30 },
+            { name: 'MINE', frequency: 60 },
+            { name: 'DOOR', frequency: 10 },
+            { name: 'EMPTY', frequency: 30 * 16 - 50 - 20 },
+          ],
+          WIDTH,
+          HEIGHT,
+          state.layer,
+        );
+        state.cellData = objectResults;
+        state.mineIndex[state.layer] = indices['MINE'];
       }),
     addFlag: (c: Coordinate) => {
       set((state) => {
         // flags are toggle-able.
         const cellKey = `${c[0]}:${c[1]}:${state.layer}`;
         if (state.cellData[cellKey]) {
-          state.cellData[cellKey].flagged = !state.cellData[cellKey].flagged;
+          state.cellData[cellKey].aboveCell = state.cellData[cellKey].aboveCell === 'FLAG' ? 'EMPTY' : 'FLAG';
         } else {
-          state.cellData[cellKey] = { ...state.cellData[cellKey], flagged: true };
+          state.cellData[cellKey] = { ...state.cellData[cellKey], aboveCell: 'FLAG' };
         }
       });
     },
@@ -300,7 +325,7 @@ export const useGameStore = create<GameState & Actions>()(
                 const doesThisPropagate = calculateCellNumber({ x: i, y: j }, state.cellData, state.layer) !== 0;
                 if (
                   doesThisPropagate &&
-                  !state.cellData[`${i}:${j}:${state.layer}`]?.mined &&
+                  state.cellData[`${i}:${j}:${state.layer}`]?.belowCell !== 'MINE' &&
                   !state.cellData[`${i}:${j}:${state.layer}`]?.clicked
                 ) {
                   linearFloodClick([i, j], howLongToGo);
@@ -324,7 +349,7 @@ export const useGameStore = create<GameState & Actions>()(
         // so instead of the expensive loop check, just don't re-push if it was a clear cell to start!
         if (cellValue !== '') {
           // increase the combo counter by the cell value
-          if (cellValue !== 'M' && cellValue !== 'G') {
+          if (cellValue !== 'M' && cellValue !== 'G' && cellValue !== '↓') {
             // maybe have something to do with combo count when you hit a gold?
             // if we've already clicked this cell, don't add combo! (unless some relic/unique in the future...)
             if (!alreadyClicked) {
@@ -348,16 +373,29 @@ export const useGameStore = create<GameState & Actions>()(
     // useItem: (i: Item) => {},
     resetGame: () => {
       set((state) => {
-        const { objects: mines, objectIndex: mineIndex } = generateLayerObjects(
-          state.width[0],
-          state.height[0],
-          state.startingMines,
+        const { objectResults, indices } = generateLayerObjectV2(
+          [
+            { name: 'GOLD', frequency: 30 },
+            { name: 'MINE', frequency: 60 },
+            { name: 'DOOR', frequency: 10 },
+            { name: 'EMPTY', frequency: 30 * 16 - 50 - 20 },
+          ],
+          WIDTH,
+          HEIGHT,
           0,
-          { mined: true },
         );
-        const { objects: gold } = generateLayerObjects(state.width[0], state.height[0], GOLD, 0, { gold: 5 });
-        state.cellData = { ...mines, ...gold };
-        state.mineIndex[0] = mineIndex;
+        // const { objects: mines, objectIndex: mineIndex } = generateLayerObjects(
+        //   state.width[0],
+        //   state.height[0],
+        //   state.startingMines,
+        //   0,
+        //   { mined: true },
+        // );
+        // const { objects: gold } = generateLayerObjects(state.width[0], state.height[0], GOLD, 0, { gold: 5 });
+        // state.cellData = { ...mines, ...gold };
+        // state.mineIndex[0] = mineIndex;
+        state.cellData = objectResults;
+        state.mineIndex[0] = indices['MINE'];
         state.darknessData = {};
         state.comboCount = 0;
         state.layer = 0;

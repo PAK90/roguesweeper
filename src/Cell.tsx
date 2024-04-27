@@ -14,6 +14,7 @@ function Cell({ x, y }: { x: number; y: number }) {
 
   const ungildCell = useGameStore((state) => state.consumeGold);
   const addToInventory = useGameStore((s) => s.addItemToInventory);
+  const setLayer = useGameStore((state) => state.setLayer);
 
   const cellKey = `${x}:${y}:${currentLayer}`;
   let isCellDark = false;
@@ -26,19 +27,22 @@ function Cell({ x, y }: { x: number; y: number }) {
     }
   }
   const isClicked = currentCellData[cellKey]?.clicked;
-  const hasFlag = currentCellData[cellKey]?.flagged;
-  const isGilded = currentCellData[cellKey]?.gold;
+  const hasFlag = currentCellData[cellKey]?.aboveCell === 'FLAG';
+  const isGilded = currentCellData[cellKey]?.belowCell === 'GOLD';
+  const isDoor = currentCellData[cellKey]?.belowCell === 'DOOR';
   const isAtPosition = currentPosition[0] === x && currentPosition[1] === y;
   const isWithinClickRange =
     Math.floor(Math.sqrt(Math.abs(x - currentPosition[0]) ** 2 + Math.abs(y - currentPosition[1]) ** 2)) <=
     currentClickRange;
 
   let display = '';
-  const hasMine = currentCellData[cellKey]?.mined;
+  const hasMine = currentCellData[cellKey]?.belowCell === 'MINE';
 
   if (!hasMine) {
     if (isGilded) {
       display = 'G';
+    } else if (isDoor) {
+      display = '↓';
     } else {
       const cellNum = calculateCellNumber({ x, y }, currentCellData, currentLayer);
       // only show number if it's not 0
@@ -64,6 +68,8 @@ function Cell({ x, y }: { x: number; y: number }) {
     if (isGilded) {
       ungildCell([x, y]);
       addToInventory('Gold', 4);
+    } else if (isDoor) {
+      setLayer(currentLayer + 1);
     } else if (isClicked && !hasFlag) {
       clickCell([x, y], display);
     }
@@ -80,12 +86,13 @@ function Cell({ x, y }: { x: number; y: number }) {
   }
 
   const colourMap = {
-    M: 'text-black-500',
-    G: 'text-orange-400',
+    M: 'text-black-500 bg-red-300',
+    G: 'text-orange-400 bg-orange-200',
     '1': 'text-blue-500',
     '2': 'text-green-500',
     '3': 'text-red-500',
     '4': 'text-purple-500',
+    '↓': 'text-white bg-gray-600',
   };
 
   return (

@@ -12,8 +12,10 @@ export default function calculateCellNumber(
   for (let i = coords.x - range; i <= coords.x + range; i++) {
     for (let j = coords.y - range; j <= coords.y + range; j++) {
       const cellKey = `${i}:${j}:${layer}`;
-      const hasMine = objectsOfInterest[cellKey]?.mined || objectsOfInterest[cellKey]?.gold;
-      if (hasMine) interestingThingsCount++;
+
+      // need to check the cell exists first, otherwise it'll count 'edge' ones as interesting.
+      const hasInterestingThing = objectsOfInterest[cellKey] && objectsOfInterest[cellKey].belowCell !== 'EMPTY';
+      if (hasInterestingThing) interestingThingsCount++;
     }
   }
 
