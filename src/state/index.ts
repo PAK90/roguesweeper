@@ -1,10 +1,8 @@
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import calculateCellNumber from '../helpers/calculateCellNumber.ts';
-import generateLayerObjects from '../helpers/generateLayerObjects.ts';
 import { items } from '../items.ts';
 import generateLayerObjectV2 from '../helpers/generateLayerObjectsV2.ts';
-import cell from '../Cell.tsx';
 // import { Item } from '../items.ts';
 
 // export type Mine = [number, number];
@@ -100,7 +98,7 @@ type Actions = {
 const WIDTH = 30;
 const HEIGHT = 16;
 const MINES = 50;
-const GOLD = 20;
+// const GOLD = 20;
 
 export const useGameStore = create<GameState & Actions>()(
   immer((set) => ({
