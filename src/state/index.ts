@@ -303,36 +303,36 @@ export const useGameStore = create<GameState & Actions>()(
           }
         };
 
-        let floodClicksDone = 0;
-        const linearFloodClick = (coord: Coordinate, howLongToGo: number) => {
-          if (floodClicksDone > howLongToGo) return;
-          floodClicksDone++;
-          state.comboCount++;
-
-          const thisCellKey = `${coord[0]}:${coord[1]}:${state.layer}`;
-
-          state.cellData[thisCellKey] = {
-            ...state.cellData[thisCellKey],
-            clicked: true,
-          };
-
-          // check every adjacent cell to make sure it's not clear cell
-          for (let i = coord[0] - 1; i <= coord[0] + 1; i++) {
-            for (let j = coord[1] - 1; j <= coord[1] + 1; j++) {
-              if (i >= 0 && i < state.width[state.layer] && j >= 0 && j < state.height[state.layer]) {
-                const doesThisPropagate = calculateCellNumber({ x: i, y: j }, state.cellData, state.layer) !== 0;
-                if (
-                  doesThisPropagate &&
-                  state.cellData[`${i}:${j}:${state.layer}`]?.belowCell !== 'MINE' &&
-                  !state.cellData[`${i}:${j}:${state.layer}`]?.clicked
-                ) {
-                  linearFloodClick([i, j], howLongToGo);
-                  // break;
-                }
-              }
-            }
-          }
-        };
+        // let floodClicksDone = 0;
+        // const linearFloodClick = (coord: Coordinate, howLongToGo: number) => {
+        //   if (floodClicksDone > howLongToGo) return;
+        //   floodClicksDone++;
+        //   state.comboCount++;
+        //
+        //   const thisCellKey = `${coord[0]}:${coord[1]}:${state.layer}`;
+        //
+        //   state.cellData[thisCellKey] = {
+        //     ...state.cellData[thisCellKey],
+        //     clicked: true,
+        //   };
+        //
+        //   // check every adjacent cell to make sure it's not clear cell
+        //   for (let i = coord[0] - 1; i <= coord[0] + 1; i++) {
+        //     for (let j = coord[1] - 1; j <= coord[1] + 1; j++) {
+        //       if (i >= 0 && i < state.width[state.layer] && j >= 0 && j < state.height[state.layer]) {
+        //         const doesThisPropagate = calculateCellNumber({ x: i, y: j }, state.cellData, state.layer) !== 0;
+        //         if (
+        //           doesThisPropagate &&
+        //           state.cellData[`${i}:${j}:${state.layer}`]?.belowCell !== 'MINE' &&
+        //           !state.cellData[`${i}:${j}:${state.layer}`]?.clicked
+        //         ) {
+        //           linearFloodClick([i, j], howLongToGo);
+        //           // break;
+        //         }
+        //       }
+        //     }
+        //   }
+        // };
 
         if (cellValue === '') {
           // for now let's not reset combo/mana when clicking on empty

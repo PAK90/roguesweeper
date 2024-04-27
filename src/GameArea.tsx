@@ -67,7 +67,7 @@ function GameArea() {
 
   useEffect(() => {
     resetGame();
-  }, []);
+  }, [resetGame]);
 
   return (
     <>
