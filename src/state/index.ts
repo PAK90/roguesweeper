@@ -228,7 +228,13 @@ export const useGameStore = create<GameState & Actions>()(
           WIDTH,
           HEIGHT,
           state.layer,
-          [state.position],
+          [
+            state.position,
+            [state.position[0] + 1, state.position[1]],
+            [state.position[0] - 1, state.position[1]],
+            [state.position[0], state.position[1] + 1],
+            [state.position[0], state.position[1] - 1],
+          ],
         );
         // need to spread because we're adding data to existing data for other layers.
         state.cellData = { ...state.cellData, ...objectResults };
@@ -237,6 +243,10 @@ export const useGameStore = create<GameState & Actions>()(
         // if we're going down, clear some cells around the current position
         if (isGoingDown) {
           state.cellData[`${state.position[0]}:${state.position[1]}:${v}`].clicked = true;
+          state.cellData[`${state.position[0] + 1}:${state.position[1]}:${v}`].clicked = true;
+          state.cellData[`${state.position[0] - 1}:${state.position[1]}:${v}`].clicked = true;
+          state.cellData[`${state.position[0]}:${state.position[1] + 1}:${v}`].clicked = true;
+          state.cellData[`${state.position[0]}:${state.position[1] - 1}:${v}`].clicked = true;
         }
       }),
     addFlag: (c: Coordinate) => {
@@ -369,16 +379,6 @@ export const useGameStore = create<GameState & Actions>()(
           HEIGHT,
           0,
         );
-        // const { objects: mines, objectIndex: mineIndex } = generateLayerObjects(
-        //   state.width[0],
-        //   state.height[0],
-        //   state.startingMines,
-        //   0,
-        //   { mined: true },
-        // );
-        // const { objects: gold } = generateLayerObjects(state.width[0], state.height[0], GOLD, 0, { gold: 5 });
-        // state.cellData = { ...mines, ...gold };
-        // state.mineIndex[0] = mineIndex;
         state.cellData = objectResults;
         state.mineIndex[0] = indices['MINE'];
         state.darknessData = {};
