@@ -97,8 +97,9 @@ type Actions = {
 
 const WIDTH = 30;
 const HEIGHT = 16;
-const MINES = 50;
-// const GOLD = 20;
+const MINES = 40;
+const GOLDS = 20;
+const DOORS = 10;
 
 export const useGameStore = create<GameState & Actions>()(
   immer((set) => ({
@@ -205,6 +206,7 @@ export const useGameStore = create<GameState & Actions>()(
       }),
     setLayer: (v: number) =>
       set((state) => {
+        const isGoingDown = state.layer < v;
         state.layer = v;
         // if there are no mines on this layer, make some.
         if (state.mineIndex[state.layer]) return;
@@ -217,40 +219,25 @@ export const useGameStore = create<GameState & Actions>()(
         if (!state.width[state.layer]) {
           state.width[state.layer] = Math.floor(state.width[0] * layerScaling);
         }
-        // const { objects: mines, objectIndex: mineIndex } = generateLayerObjects(
-        //   Math.floor(state.height[0] * layerScaling),
-        //   Math.floor(state.width[0] * layerScaling),
-        //   Math.floor(state.startingMines * layerScaling ** 2),
-        //   v,
-        //   { mined: true },
-        // );
-        // state.cellData = { ...state.cellData, ...mines };
-        // state.mineIndex[state.layer] = mineIndex;
-        //
-        // // gold? goldIndex?
-        // const { objects: gold } = generateLayerObjects(
-        //   Math.floor(state.height[0] * layerScaling),
-        //   Math.floor(state.width[0] * layerScaling),
-        //   GOLD,
-        //   v,
-        //   { gold: 5 },
-        // );
-        // state.cellData = { ...state.cellData, ...gold };
-        // state.mineIndex[state.layer] = mineIndex;
         const { objectResults, indices } = generateLayerObjectV2(
           [
-            { name: 'GOLD', frequency: 30 },
-            { name: 'MINE', frequency: 60 },
-            { name: 'DOOR', frequency: 10 },
-            { name: 'EMPTY', frequency: 30 * 16 - 50 - 20 },
+            { name: 'GOLD', frequency: GOLDS },
+            { name: 'MINE', frequency: MINES },
+            { name: 'DOOR', frequency: DOORS },
           ],
           WIDTH,
           HEIGHT,
           state.layer,
+          [state.position],
         );
         // need to spread because we're adding data to existing data for other layers.
         state.cellData = { ...state.cellData, ...objectResults };
         state.mineIndex[state.layer] = indices['MINE'];
+
+        // if we're going down, clear some cells around the current position
+        if (isGoingDown) {
+          state.cellData[`${state.position[0]}:${state.position[1]}:${v}`].clicked = true;
+        }
       }),
     addFlag: (c: Coordinate) => {
       set((state) => {
@@ -374,10 +361,9 @@ export const useGameStore = create<GameState & Actions>()(
       set((state) => {
         const { objectResults, indices } = generateLayerObjectV2(
           [
-            { name: 'GOLD', frequency: 30 },
-            { name: 'MINE', frequency: 60 },
-            { name: 'DOOR', frequency: 10 },
-            { name: 'EMPTY', frequency: 30 * 16 - 50 - 20 },
+            { name: 'GOLD', frequency: GOLDS },
+            { name: 'MINE', frequency: MINES },
+            { name: 'DOOR', frequency: DOORS },
           ],
           WIDTH,
           HEIGHT,

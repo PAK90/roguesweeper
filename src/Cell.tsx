@@ -80,7 +80,7 @@ function Cell({ x, y }: { x: number; y: number }) {
       <div
         onClick={clickThis}
         onContextMenu={clickThis}
-        className={`w-8 h-8 ${isCellDark ? 'bg-black' : hasFlag ? 'bg-red-500' : isWithinClickRange ? 'bg-green-300' : 'bg-blue-200'} rounded-l`}
+        className={`w-8 h-8 ${isCellDark ? 'bg-black' : hasFlag ? 'bg-red-500' : isWithinClickRange ? 'bg-green-300' : 'bg-blue-200'} rounded`}
       />
     );
   }
