@@ -248,7 +248,8 @@ export const useGameStore = create<GameState & Actions>()(
           HEIGHT,
           state.layer,
         );
-        state.cellData = objectResults;
+        // need to spread because we're adding data to existing data for other layers.
+        state.cellData = { ...state.cellData, ...objectResults };
         state.mineIndex[state.layer] = indices['MINE'];
       }),
     addFlag: (c: Coordinate) => {
