@@ -17,15 +17,15 @@ function Cell({ x, y }: { x: number; y: number }) {
   const setLayer = useGameStore((state) => state.setLayer);
 
   const cellKey = `${x}:${y}:${currentLayer}`;
-  let isCellDark = false;
-  for (let i = 0; i < currentLayer; i++) {
-    // descend through the layers to check if this cell in that layer is clicked
-    // if not, it's dark
-    if (!currentCellData[`${x}:${y}:${i}`]?.clicked) {
-      isCellDark = true;
-      break;
-    }
-  }
+  // let isCellDark = false;
+  // for (let i = 0; i < currentLayer; i++) {
+  //   // descend through the layers to check if this cell in that layer is clicked
+  //   // if not, it's dark
+  //   if (!currentCellData[`${x}:${y}:${i}`]?.clicked) {
+  //     isCellDark = true;
+  //     break;
+  //   }
+  // }
   const isClicked = currentCellData[cellKey]?.clicked;
   const hasFlag = currentCellData[cellKey]?.aboveCell === 'FLAG';
   const isGilded = currentCellData[cellKey]?.belowCell === 'GOLD';
@@ -75,13 +75,19 @@ function Cell({ x, y }: { x: number; y: number }) {
     }
   };
 
+  const delay = Math.sqrt(Math.abs(currentPosition[0] - x) ** 2 + Math.abs(currentPosition[1] - y) ** 2) * 40;
+
   if (!isClicked) {
     return (
       <div
         onClick={clickThis}
         onContextMenu={clickThis}
-        className={`w-8 h-8 ${isCellDark ? 'bg-black' : hasFlag ? 'bg-red-500' : isWithinClickRange ? 'bg-green-300' : 'bg-blue-200'} rounded`}
-      />
+        style={{ transitionDelay: `${delay}ms` }}
+        // className={`w-8 h-8 ${isCellDark ? 'bg-black' : hasFlag ? 'bg-red-500' : isWithinClickRange ? 'bg-green-300' : 'bg-blue-200'} rounded`}
+        className={`w-8 h-8 cursor-pointer ${hasFlag ? 'bg-red-500' : isWithinClickRange ? 'bg-green-300' : 'bg-blue-200'} rounded`}
+      >
+        {/*{currentCellData[cellKey]?.darkness}*/}
+      </div>
     );
   }
 
@@ -98,7 +104,8 @@ function Cell({ x, y }: { x: number; y: number }) {
   return (
     <div
       onClick={clickThisClearCell}
-      className={`w-8 h-8 
+      style={{ transitionDelay: `${delay}ms` }}
+      className={`w-8 h-8 select-none
         ${isAtPosition ? 'border-4' : 'border-2'} 
         ${isAtPosition || isWithinClickRange ? 'border-green-400' : 'border-sky-200'}
          bg-gray-50 ${colourMap[display as keyof typeof colourMap]}`}

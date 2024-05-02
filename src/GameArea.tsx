@@ -33,7 +33,10 @@ function GameArea() {
       for (let i = currentPosition[0] - r; i <= currentPosition[0] + r; i++) {
         for (let j = currentPosition[1] - r; j <= currentPosition[1] + r; j++) {
           const cellToLookFor = `${i}:${j}:${currentLayer}`;
-          if (currentCellData[cellToLookFor]?.belowCell === 'GOLD') {
+          if (
+            currentCellData[cellToLookFor]?.belowCell === 'GOLD' ||
+            currentCellData[cellToLookFor]?.belowCell === 'DOOR'
+          ) {
             const xVal = currentPosition[0] - i;
             const yVal = currentPosition[1] - j;
             // this is INVERSE to code I've used before; it uses svg where the y val is inverted

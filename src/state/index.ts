@@ -3,6 +3,7 @@ import { immer } from 'zustand/middleware/immer';
 import calculateCellNumber from '../helpers/calculateCellNumber.ts';
 import { items } from '../items.ts';
 import generateLayerObjectV2 from '../helpers/generateLayerObjectsV2.ts';
+// import calculateDarknessLevels from '../helpers/calculateDarknessLevels.ts';
 // import { Item } from '../items.ts';
 
 // export type Mine = [number, number];
@@ -364,6 +365,11 @@ export const useGameStore = create<GameState & Actions>()(
             clicked: true,
           };
         }
+
+        // update darkness?
+
+        // const darknesses = calculateDarknessLevels([state.position], state.layer);
+        // darknesses.forEach((d) => (state.cellData[d.cellKey].darkness = d.lightLevel));
       });
     },
     // useItem: (i: Item) => {},
@@ -388,6 +394,8 @@ export const useGameStore = create<GameState & Actions>()(
         state.clicks = 30;
         state.inventory = [];
         state.position = [Math.floor(state.width[0] / 2), Math.floor(state.height[0] / 2)];
+        // const darknesses = calculateDarknessLevels([state.position], state.layer);
+        // darknesses.forEach((d) => (state.cellData[d.cellKey].darkness = d.lightLevel));
       });
     },
   })),
