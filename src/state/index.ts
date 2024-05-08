@@ -3,6 +3,7 @@ import { immer } from 'zustand/middleware/immer';
 import calculateCellNumber from '../helpers/calculateCellNumber.ts';
 import { items } from '../items.ts';
 import generateLayerObjectV2 from '../helpers/generateLayerObjectsV2.ts';
+import findWithinRange from '../helpers/findWithinRange.ts';
 // import calculateDarknessLevels from '../helpers/calculateDarknessLevels.ts';
 // import { Item } from '../items.ts';
 
@@ -98,7 +99,7 @@ type Actions = {
 
 const WIDTH = 30;
 const HEIGHT = 16;
-const MINES = 40;
+const MINES = 70;
 const GOLDS = 20;
 const DOORS = 10;
 
@@ -357,7 +358,35 @@ export const useGameStore = create<GameState & Actions>()(
             if (cellValue === 'M') {
               // i.e. it's a mine.
               state.comboCount = 0;
-              state.lives -= 1;
+              // state.lives -= 1;
+              // something new; find all mines within radius X and trigger them all
+              // to start; first build a list of all mines within radius X of this clicked one
+              const minesToClick = findWithinRange(state.cellData, cellKey, 1);
+              const cellsToClick: string[] = [];
+              minesToClick.forEach((mine) => {
+                state.lives -= 1;
+                state.cellData[mine] = {
+                  ...state.cellData[mine],
+                  clicked: true,
+                };
+                // also generate a list of surrounding cells to click
+                const [x, y, layer] = mine.split(':').map(Number);
+                for (let i = x - 1; i <= x + 1; i++) {
+                  for (let j = y - 1; j <= y + 1; j++) {
+                    const newKey = `${i}:${j}:${layer}`;
+                    // TODO: remove this includes.
+                    if (minesToClick.includes(newKey)) continue;
+                    cellsToClick.push(newKey);
+                  }
+                }
+              });
+              console.log(minesToClick, cellsToClick);
+              cellsToClick.forEach((cellToClick) => {
+                state.cellData[cellToClick] = {
+                  ...state.cellData[cellToClick],
+                  clicked: true,
+                };
+              });
             }
           }
           state.cellData[cellKey] = {
