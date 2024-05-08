@@ -3,7 +3,7 @@ import { immer } from 'zustand/middleware/immer';
 import calculateCellNumber from '../helpers/calculateCellNumber.ts';
 import { items } from '../items.ts';
 import generateLayerObjectV2 from '../helpers/generateLayerObjectsV2.ts';
-import findWithinRange from '../helpers/findWithinRange.ts';
+import propagateAlongTruth from '../helpers/propagateAlongTruth.ts';
 // import calculateDarknessLevels from '../helpers/calculateDarknessLevels.ts';
 // import { Item } from '../items.ts';
 
@@ -361,7 +361,7 @@ export const useGameStore = create<GameState & Actions>()(
               // state.lives -= 1;
               // something new; find all mines within radius X and trigger them all
               // to start; first build a list of all mines within radius X of this clicked one
-              const minesToClick = findWithinRange(state.cellData, cellKey, 1);
+              const minesToClick = propagateAlongTruth(state.cellData, cellKey, 1);
               const cellsToClick: string[] = [];
               minesToClick.forEach((mine) => {
                 state.lives -= 1;
