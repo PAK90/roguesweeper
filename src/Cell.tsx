@@ -78,6 +78,7 @@ function Cell({ x, y }: { x: number; y: number }) {
   const delay = Math.sqrt(Math.abs(currentPosition[0] - x) ** 2 + Math.abs(currentPosition[1] - y) ** 2) * 40;
 
   const MAX_LIGHT_LEVEL = 7;
+  const darkness = currentCellData[cellKey].darkness || 0;
 
   if (!isClicked) {
     return (
@@ -90,7 +91,7 @@ function Cell({ x, y }: { x: number; y: number }) {
       >
         <div
           className="bg-indigo-950 w-8 h-8 absolute pointer-events-none"
-          style={{ opacity: `${((MAX_LIGHT_LEVEL - currentCellData[cellKey]?.darkness) * 100) / MAX_LIGHT_LEVEL}%` }}
+          style={{ opacity: `${((MAX_LIGHT_LEVEL - darkness) * 100) / MAX_LIGHT_LEVEL}%` }}
         />
       </div>
     );
@@ -113,7 +114,7 @@ function Cell({ x, y }: { x: number; y: number }) {
     <div style={{ position: 'relative' }}>
       <div
         className="bg-indigo-950 w-8 h-8 absolute pointer-events-none cursor-pointer"
-        style={{ opacity: `${((MAX_LIGHT_LEVEL - currentCellData[cellKey]?.darkness) * 100) / MAX_LIGHT_LEVEL}%` }}
+        style={{ opacity: `${((MAX_LIGHT_LEVEL - darkness) * 100) / MAX_LIGHT_LEVEL}%` }}
       />
       <div
         onClick={clickThisClearCell}
