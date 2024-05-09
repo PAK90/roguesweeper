@@ -78,7 +78,7 @@ function Cell({ x, y }: { x: number; y: number }) {
   const delay = Math.sqrt(Math.abs(currentPosition[0] - x) ** 2 + Math.abs(currentPosition[1] - y) ** 2) * 40;
 
   const MAX_LIGHT_LEVEL = 7;
-  const darkness = currentCellData[cellKey].darkness || 0;
+  const darkness = currentCellData[cellKey]?.darkness || 0;
 
   if (!isClicked) {
     return (
