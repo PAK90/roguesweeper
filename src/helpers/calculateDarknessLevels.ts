@@ -1,11 +1,11 @@
-import { CellUpdateData, Coordinate } from '../state';
+import { CellUpdateData } from '../state';
 
 // Direction vectors
 const dRow = [-1, 0, 1, 0];
 const dCol = [0, 1, 0, -1];
 
 export default function calculateDarknessLevels(
-  lightSources: Coordinate[],
+  lightSources: string[],
   cellData: CellUpdateData,
   layer: number,
   playerRange: number,
@@ -17,12 +17,13 @@ export default function calculateDarknessLevels(
   const darknessIndex: { [key: string]: number } = {};
 
   lightSources.forEach((lightSource) => {
-    const checkedCells = { [`${lightSource[0]}${lightSource[1]}`]: true };
+    const [sourceX, sourceY] = lightSource.split(':').map(Number);
+    const checkedCells = { [`${sourceX}${sourceY}`]: true };
 
-    const cellsToCheck = [{ cell: [lightSource[0], lightSource[1]], distance: 0 }];
+    const cellsToCheck = [{ cell: [sourceX, sourceY], distance: 0 }];
 
     const isValid = (x: number, y: number, distance: number): boolean => {
-      if (x < 0 || y < 0 || y > 16 || x > 30) return false;
+      if (x < 0 || y < 0 || y >= 16 || x >= 30) return false;
       if (checkedCells[`${x}${y}`]) return false;
       if (distance > maxDistance) return false;
       return true;

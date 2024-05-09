@@ -23,7 +23,7 @@ export type Mines = { [key: string]: boolean };
 interface BaseCell {
   clicked?: boolean;
   darkness?: number;
-  aboveCell?: 'FLAG' | 'EMPTY';
+  aboveCell?: 'FLAG' | 'TORCH' | 'EMPTY';
   belowCell?: 'MINE' | 'GOLD' | 'DOOR' | 'EMPTY';
 }
 
@@ -36,6 +36,9 @@ interface ClickedCell extends BaseCell {
 interface FlaggedCell extends BaseCell {
   aboveCell: 'FLAG';
 }
+interface TorchedCell extends BaseCell {
+  aboveCell: 'TORCH';
+}
 interface DarkCell extends BaseCell {
   darkness: number;
 }
@@ -46,7 +49,7 @@ interface DoorCell extends BaseCell {
   belowCell: 'DOOR';
 }
 
-export type CellFragmentData = GildedCell | DarkCell | MinedCell | ClickedCell | FlaggedCell | DoorCell;
+export type CellFragmentData = GildedCell | DarkCell | MinedCell | ClickedCell | FlaggedCell | TorchedCell | DoorCell;
 
 export type CellUpdateData = {
   [key: string]: GildedCell | DarkCell | MinedCell | ClickedCell | FlaggedCell | DoorCell;
@@ -74,6 +77,7 @@ export type GameState = {
   darknessData: { [key: string]: number };
 
   mineIndex: string[][];
+  torchIndex: string[][];
 };
 
 type Actions = {
@@ -89,6 +93,7 @@ type Actions = {
   clickCell: (c: Coordinate, cellValue: string) => void;
   addFlag: (c: Coordinate) => void;
   consumeGold: (c: Coordinate) => void;
+  placeTorch: (c: Coordinate) => void;
 
   addItemToInventory: (itemName: string, n: number) => void;
 
@@ -120,6 +125,7 @@ export const useGameStore = create<GameState & Actions>()(
     cellData: {},
     darknessData: {},
     mineIndex: [],
+    torchIndex: [],
 
     consumeGold: (c: Coordinate) =>
       set((state) => {
@@ -206,6 +212,12 @@ export const useGameStore = create<GameState & Actions>()(
       set((state) => {
         state.clicks -= 1;
       }),
+    placeTorch: (c: Coordinate) =>
+      set((state) => {
+        const cellKey = `${c[0]}:${c[1]}:${state.layer}`;
+        state.torchIndex[state.layer].push(cellKey);
+        state.cellData[cellKey].aboveCell = 'TORCH';
+      }),
     setLayer: (v: number) =>
       set((state) => {
         const isGoingDown = state.layer < v;
@@ -241,6 +253,7 @@ export const useGameStore = create<GameState & Actions>()(
         // need to spread because we're adding data to existing data for other layers.
         state.cellData = { ...state.cellData, ...objectResults };
         state.mineIndex[state.layer] = indices['MINE'];
+        state.torchIndex[state.layer] = [];
 
         // if we're going down, clear some cells around the current position
         if (isGoingDown) {
@@ -398,7 +411,7 @@ export const useGameStore = create<GameState & Actions>()(
         // update darkness?
 
         const darknesses = calculateDarknessLevels(
-          [state.position, [10, 10]],
+          [cellKey, ...state.torchIndex[state.layer]],
           state.cellData,
           state.layer,
           state.clickRange,
@@ -421,6 +434,7 @@ export const useGameStore = create<GameState & Actions>()(
         );
         state.cellData = objectResults;
         state.mineIndex[0] = indices['MINE'];
+        state.torchIndex[0] = [];
         state.darknessData = {};
         state.comboCount = 0;
         state.layer = 0;
@@ -429,7 +443,7 @@ export const useGameStore = create<GameState & Actions>()(
         state.inventory = [];
         state.position = [Math.floor(state.width[0] / 2), Math.floor(state.height[0] / 2)];
         const darknesses = calculateDarknessLevels(
-          [state.position, [10, 10]],
+          state.torchIndex[state.layer],
           state.cellData,
           state.layer,
           state.clickRange,

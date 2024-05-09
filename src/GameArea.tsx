@@ -23,6 +23,7 @@ function GameArea() {
   const setLayer = useGameStore((state) => state.setLayer);
   const gridHeight = useGameStore((state) => state.height[currentLayer]);
   const gridWidth = useGameStore((state) => state.width[currentLayer]);
+  const setTorch = useGameStore((s) => s.placeTorch);
 
   const setInventory = useGameStore((state) => state.toggleInventory);
 
@@ -114,7 +115,16 @@ function GameArea() {
         <p className="p-1 rounded border-orange-400 border-2">{`Treasure: ${nearestGold}`}</p>
         <p className="m-1 p-0.5">{`Lives: ${currentLives}`}</p>
         <p className="m-1 p-0.5">{`Clicks: ${currentClicksLeft}`}</p>
-        <button className="m-1 p-0.5 rounded bg-amber-200 duration-100 hover:bg-amber-300 " onClick={setInventory}>
+        <button
+          className="m-1 p-0.5 rounded bg-amber-200 duration-100 hover:bg-amber-300 "
+          disabled={
+            currentCellData[`${currentPosition[0]}:${currentPosition[1]}:${currentLayer}`]?.aboveCell === 'TORCH'
+          }
+          onClick={() => setTorch(currentPosition)}
+        >
+          Set Torch
+        </button>
+        <button className="m-1 p-0.5 rounded bg-blue-200 duration-100 hover:bg-amber-300 " onClick={setInventory}>
           Open Inventory
         </button>
         <button className="m-1 p-0.5 rounded bg-green-200 duration-100 hover:bg-green-300 " onClick={resetGame}>
