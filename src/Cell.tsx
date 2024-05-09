@@ -77,6 +77,8 @@ function Cell({ x, y }: { x: number; y: number }) {
 
   const delay = Math.sqrt(Math.abs(currentPosition[0] - x) ** 2 + Math.abs(currentPosition[1] - y) ** 2) * 40;
 
+  const MAX_LIGHT_LEVEL = 7;
+
   if (!isClicked) {
     return (
       <div
@@ -86,7 +88,10 @@ function Cell({ x, y }: { x: number; y: number }) {
         // className={`w-8 h-8 ${isCellDark ? 'bg-black' : hasFlag ? 'bg-red-500' : isWithinClickRange ? 'bg-green-300' : 'bg-blue-200'} rounded`}
         className={`w-8 h-8 cursor-pointer ${hasFlag ? 'bg-red-500' : isWithinClickRange ? 'bg-green-300' : 'bg-blue-200'} rounded`}
       >
-        {/*{currentCellData[cellKey]?.darkness}*/}
+        <div
+          className="bg-indigo-950 w-8 h-8 absolute pointer-events-none"
+          style={{ opacity: `${((MAX_LIGHT_LEVEL - currentCellData[cellKey]?.darkness) * 100) / MAX_LIGHT_LEVEL}%` }}
+        />
       </div>
     );
   }
@@ -101,16 +106,25 @@ function Cell({ x, y }: { x: number; y: number }) {
     '↓': 'text-white bg-gray-600',
   };
 
+  // const opacityString = `opacity-${currentCellData[cellKey]?.darkness * 20}`;
+  // const classString = `${opacityString} bg-black w-8 h-8 absolute pointer-events-none`;
+
   return (
-    <div
-      onClick={clickThisClearCell}
-      style={{ transitionDelay: `${delay}ms` }}
-      className={`w-8 h-8 select-none
+    <div style={{ position: 'relative' }}>
+      <div
+        className="bg-indigo-950 w-8 h-8 absolute pointer-events-none cursor-pointer"
+        style={{ opacity: `${((MAX_LIGHT_LEVEL - currentCellData[cellKey]?.darkness) * 100) / MAX_LIGHT_LEVEL}%` }}
+      />
+      <div
+        onClick={clickThisClearCell}
+        style={{ transitionDelay: `${delay}ms` }}
+        className={`w-8 h-8 select-none
         ${isAtPosition ? 'border-4' : 'border-2'} 
         ${isAtPosition || isWithinClickRange ? 'border-green-400' : 'border-sky-200'}
          bg-gray-50 ${colourMap[display as keyof typeof colourMap]}`}
-    >
-      {display}
+      >
+        {display}
+      </div>
     </div>
   );
 }
