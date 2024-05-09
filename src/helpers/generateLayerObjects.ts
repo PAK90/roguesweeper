@@ -18,6 +18,7 @@ export default function generateLayerObjects(
     const xPos = Math.floor(random.next() * gridWidth);
     const yPos = Math.floor(random.next() * gridHeight);
     return {
+      // @ts-expect-error because
       cellData: {
         [`${xPos}:${yPos}:${layer}`]: {
           ...cellDataOverride,
