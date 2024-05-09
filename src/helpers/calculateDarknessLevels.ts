@@ -14,6 +14,7 @@ export default function calculateDarknessLevels(
   const maxDistance = maxLightLevel + playerRange;
 
   const darknessArray: { cellKey: string; lightLevel: number }[] = [];
+  const darknessIndex: { [key: string]: number } = {};
 
   lightSources.forEach((lightSource) => {
     const checkedCells = { [`${lightSource[0]}${lightSource[1]}`]: true };
@@ -21,7 +22,6 @@ export default function calculateDarknessLevels(
     const cellsToCheck = [{ cell: [lightSource[0], lightSource[1]], distance: 0 }];
 
     const isValid = (x: number, y: number, distance: number): boolean => {
-      // if (distance > range) return false;
       if (x < 0 || y < 0 || y > 16 || x > 30) return false;
       if (checkedCells[`${x}${y}`]) return false;
       if (distance > maxDistance) return false;
@@ -35,11 +35,13 @@ export default function calculateDarknessLevels(
       cellsToCheck.shift();
 
       // register this cell's darkness
-      darknessArray.push({ cellKey: `${x}:${y}:${layer}`, lightLevel: Math.max(0, maxLightLevel - distance) });
+      const lightLevel = Math.max(0, maxLightLevel - distance, darknessIndex[`${x}${y}`] || 0);
+      darknessIndex[`${x}${y}`] = lightLevel;
+      darknessArray.push({ cellKey: `${x}:${y}:${layer}`, lightLevel });
 
       // only continue to adding other cells if this one's not unclicked
 
-      if (!cellData[`${x}:${y}:${layer}`].clicked) continue;
+      if (!cellData[`${x}:${y}:${layer}`]?.clicked) continue;
 
       for (let i = 0; i < 4; i++) {
         const adjx = x + dRow[i];

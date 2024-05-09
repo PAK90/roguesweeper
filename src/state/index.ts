@@ -397,7 +397,12 @@ export const useGameStore = create<GameState & Actions>()(
 
         // update darkness?
 
-        const darknesses = calculateDarknessLevels([state.position], state.cellData, state.layer, state.clickRange);
+        const darknesses = calculateDarknessLevels(
+          [state.position, [10, 10]],
+          state.cellData,
+          state.layer,
+          state.clickRange,
+        );
         darknesses.forEach((d) => (state.cellData[d.cellKey].darkness = d.lightLevel));
       });
     },
@@ -423,7 +428,12 @@ export const useGameStore = create<GameState & Actions>()(
         state.clicks = 30;
         state.inventory = [];
         state.position = [Math.floor(state.width[0] / 2), Math.floor(state.height[0] / 2)];
-        const darknesses = calculateDarknessLevels([state.position], state.cellData, state.layer, state.clickRange);
+        const darknesses = calculateDarknessLevels(
+          [state.position, [10, 10]],
+          state.cellData,
+          state.layer,
+          state.clickRange,
+        );
         darknesses.forEach((d) => (state.cellData[d.cellKey].darkness = d.lightLevel));
       });
     },
