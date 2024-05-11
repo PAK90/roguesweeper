@@ -192,6 +192,7 @@ export const useGameStore = create<GameState & Actions>()(
         // apply item effects
         item.modifiers.forEach((modifier) => {
           if (modifier.modifierType === 'ADDITIVE') {
+            // @ts-expect-error something something never
             state[modifier.propName] += modifier.propModifier;
           }
         });
