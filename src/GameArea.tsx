@@ -69,7 +69,7 @@ function GameArea() {
   };
   getNearestGold();
 
-  const depthRecord = localStorage.getItem('depthRecord') || '';
+  const depthRecord = localStorage.getItem('depthRecord') || '0';
 
   const goToStore = () => {
     if (currentLayer > parseInt(depthRecord)) {
