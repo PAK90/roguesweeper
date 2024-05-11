@@ -7,7 +7,7 @@ function ShopDialog() {
   console.log(inventory);
   return (
     <>
-      <div hidden={!browsing} className="bg-gray-200 shadow-2xl absolute top-1/4 left-1/4 w-1/2 h-1/2">
+      <div hidden={!browsing} className="bg-gray-200 shadow-2xl absolute top-1/4 left-1/4 w-1/2 h-1/2 z-20">
         HELLO I AM BAG
         {inventory.map((item) => {
           return <div>{`${item.name} (${item.stackSize})`}</div>;

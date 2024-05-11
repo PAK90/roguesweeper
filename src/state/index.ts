@@ -1,11 +1,10 @@
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import calculateCellNumber from '../helpers/calculateCellNumber.ts';
-import { items } from '../items.ts';
+import { Item, items } from '../items.ts';
 import generateLayerObjectV2 from '../helpers/generateLayerObjectsV2.ts';
 import propagateAlongTruth from '../helpers/propagateAlongTruth.ts';
 import calculateDarknessLevels from '../helpers/calculateDarknessLevels.ts';
-// import { Item } from '../items.ts';
 
 // export type Mine = [number, number];
 export type Coordinate = [number, number];
@@ -65,12 +64,14 @@ export type GameState = {
   browsingInventory: boolean;
   lives: number;
   clicks: number;
+  torches: number;
   inventory: ItemData[];
   width: number[];
   height: number[];
   layer: number;
   comboCount: number;
   position: Coordinate;
+  lastPosition: Coordinate;
   clickRange: number;
   startingMines: number;
   cellData: CellUpdateData;
@@ -92,21 +93,25 @@ type Actions = {
   setLayer: (v: number) => void;
   clickCell: (c: Coordinate, cellValue: string) => void;
   addFlag: (c: Coordinate) => void;
-  consumeGold: (c: Coordinate) => void;
+  digUpGold: (c: Coordinate) => void;
   placeTorch: (c: Coordinate) => void;
 
   addItemToInventory: (itemName: string, n: number) => void;
 
-  // useItem: (i: Item) => void;
+  useItem: (i: Item) => void;
 
   resetGame: () => void;
 };
 
 const WIDTH = 30;
-const HEIGHT = 16;
+const HEIGHT = 30;
 const MINES = 70;
 const GOLDS = 20;
 const DOORS = 10;
+
+const LIVES = 5;
+const CLICKS = 40;
+const TORCHES = 10;
 
 export const useGameStore = create<GameState & Actions>()(
   immer((set) => ({
@@ -115,11 +120,13 @@ export const useGameStore = create<GameState & Actions>()(
     width: [WIDTH],
     height: [HEIGHT],
     startingMines: MINES,
-    lives: 3,
-    clicks: 30,
+    lives: LIVES,
+    clicks: CLICKS,
+    torches: TORCHES,
     inventory: [],
     layer: 0,
     position: [Math.floor(WIDTH / 2), Math.floor(HEIGHT / 2)],
+    lastPosition: [0, 0],
     comboCount: 0,
     clickRange: 3,
     cellData: {},
@@ -127,7 +134,7 @@ export const useGameStore = create<GameState & Actions>()(
     mineIndex: [],
     torchIndex: [],
 
-    consumeGold: (c: Coordinate) =>
+    digUpGold: (c: Coordinate) =>
       set((state) => {
         const cellKey = `${c[0]}:${c[1]}:${state.layer}`;
         // TODO: put gold into inventory... have to do it separately, this won't work.
@@ -180,9 +187,80 @@ export const useGameStore = create<GameState & Actions>()(
           }
         }
       }),
+    useItem: (item: Item) => {
+      set((state) => {
+        // apply item effects
+        item.modifiers.forEach((modifier) => {
+          if (modifier.modifierType === 'ADDITIVE') {
+            state[modifier.propName] += modifier.propModifier;
+          }
+        });
+        // pay the item's cost (assuming we've checked elsewhere if we have enough gold to pay for it)
+        let costToPay = item.cost || 0;
+        for (let i = state.inventory.length - 1; i >= 0; i--) {
+          if (costToPay <= 0) break;
+          // go from the 'end' of the inventory, which is more likely to be a lower down item...
+          // doesn't really matter but it's good practise
+          const thisStack = state.inventory[i];
+          if (thisStack.stackSize > costToPay) {
+            state.inventory[i].stackSize -= costToPay;
+          } else {
+            // remove this stack
+            costToPay -= thisStack.stackSize;
+            state.inventory.splice(i, 1);
+          }
+        }
+      });
+    },
     toggleShop: () =>
       set((state) => {
         state.shopping = !state.shopping;
+        if (state.shopping) {
+          // reset most of the game
+          state.position = [Math.floor(state.width[0] / 2), Math.floor(state.height[0] / 2)];
+          const { objectResults, indices } = generateLayerObjectV2(
+            [
+              { name: 'GOLD', frequency: GOLDS },
+              { name: 'MINE', frequency: MINES },
+              { name: 'DOOR', frequency: DOORS },
+            ],
+            WIDTH,
+            HEIGHT,
+            0,
+            [
+              state.position,
+              [state.position[0] + 1, state.position[1]],
+              [state.position[0] - 1, state.position[1]],
+              [state.position[0], state.position[1] + 1],
+              [state.position[0], state.position[1] - 1],
+            ],
+          );
+          state.cellData = objectResults;
+          state.mineIndex = []; // empty the arrays, else this causes problems on game resets.
+          state.torchIndex = [];
+          state.mineIndex[0] = indices['MINE'];
+          state.torchIndex[0] = [];
+          state.darknessData = {};
+          state.comboCount = 0;
+          state.layer = 0;
+
+          state.cellData[`${state.position[0]}:${state.position[1]}:${0}`].clicked = true;
+          state.cellData[`${state.position[0] + 1}:${state.position[1]}:${0}`].clicked = true;
+          state.cellData[`${state.position[0] - 1}:${state.position[1]}:${0}`].clicked = true;
+          state.cellData[`${state.position[0]}:${state.position[1] + 1}:${0}`].clicked = true;
+          state.cellData[`${state.position[0]}:${state.position[1] - 1}:${0}`].clicked = true;
+
+          const darknesses = calculateDarknessLevels(
+            [
+              { coordinate: `${state.position[0]}:${state.position[1]}:${0}`, strength: 5 },
+              ...state.torchIndex[state.layer].map((t) => ({ coordinate: t, strength: 7 })),
+            ],
+            state.cellData,
+            state.layer,
+            state.clickRange,
+          );
+          darknesses.forEach((d) => (state.cellData[d.cellKey].darkness = d.lightLevel));
+        }
       }),
     toggleInventory: () =>
       set((state) => {
@@ -217,6 +295,18 @@ export const useGameStore = create<GameState & Actions>()(
         const cellKey = `${c[0]}:${c[1]}:${state.layer}`;
         state.torchIndex[state.layer].push(cellKey);
         state.cellData[cellKey].aboveCell = 'TORCH';
+        state.torches -= 1;
+
+        const darknesses = calculateDarknessLevels(
+          [
+            { coordinate: `${state.position[0]}:${state.position[1]}:${state.layer}`, strength: 5 },
+            ...state.torchIndex[state.layer].map((t) => ({ coordinate: t, strength: 7 })),
+          ],
+          state.cellData,
+          state.layer,
+          state.clickRange,
+        );
+        darknesses.forEach((d) => (state.cellData[d.cellKey].darkness = d.lightLevel));
       }),
     setLayer: (v: number) =>
       set((state) => {
@@ -225,18 +315,21 @@ export const useGameStore = create<GameState & Actions>()(
         // if there are no mines on this layer, make some.
         if (state.mineIndex[state.layer]) return;
 
-        // const layerScaling = Math.exp(state.layer / 30);
-        const layerScaling = 1; // temporary to work with lighting tests
-        if (!state.height[state.layer]) {
-          state.height[state.layer] = Math.floor(state.height[0] * layerScaling);
-        }
-        if (!state.width[state.layer]) {
-          state.width[state.layer] = Math.floor(state.width[0] * layerScaling);
-        }
+        const layerScaling = Math.exp(state.layer / 17);
+        // const layerScaling = 1; // temporary to work with lighting tests
+        // if (!state.height[state.layer]) {
+        //   state.height[state.layer] = Math.floor(state.height[0] * layerScaling);
+        // }
+        // if (!state.width[state.layer]) {
+        //   state.width[state.layer] = Math.floor(state.width[0] * layerScaling);
+        // }
+        // for now we're not scaling the arena size as we go down.
+        state.height[state.layer] = 30;
+        state.width[state.layer] = 30;
         const { objectResults, indices } = generateLayerObjectV2(
           [
-            { name: 'GOLD', frequency: GOLDS },
-            { name: 'MINE', frequency: MINES },
+            { name: 'GOLD', frequency: Math.floor(GOLDS * layerScaling) },
+            { name: 'MINE', frequency: Math.floor(MINES * layerScaling) },
             { name: 'DOOR', frequency: DOORS },
           ],
           WIDTH,
@@ -254,6 +347,7 @@ export const useGameStore = create<GameState & Actions>()(
         state.cellData = { ...state.cellData, ...objectResults };
         state.mineIndex[state.layer] = indices['MINE'];
         state.torchIndex[state.layer] = [];
+        console.log(state.mineIndex[state.layer], state.mineIndex[state.layer].length / 900);
 
         // if we're going down, clear some cells around the current position
         if (isGoingDown) {
@@ -263,6 +357,18 @@ export const useGameStore = create<GameState & Actions>()(
           state.cellData[`${state.position[0]}:${state.position[1] + 1}:${v}`].clicked = true;
           state.cellData[`${state.position[0]}:${state.position[1] - 1}:${v}`].clicked = true;
         }
+
+        // update darkness?
+        const darknesses = calculateDarknessLevels(
+          [
+            { coordinate: `${state.position[0]}:${state.position[1]}:${state.layer}`, strength: 5 },
+            ...state.torchIndex[state.layer].map((t) => ({ coordinate: t, strength: 7 })),
+          ],
+          state.cellData,
+          state.layer,
+          state.clickRange,
+        );
+        darknesses.forEach((d) => (state.cellData[d.cellKey].darkness = d.lightLevel));
       }),
     addFlag: (c: Coordinate) => {
       set((state) => {
@@ -279,6 +385,8 @@ export const useGameStore = create<GameState & Actions>()(
       set((state) => {
         // take a click
         state.clicks -= 1;
+        // set last position to current state position
+        state.lastPosition = state.position;
         // set current position at this click
         state.position = c;
         const cellKey = `${c[0]}:${c[1]}:${state.layer}`;
@@ -408,20 +516,27 @@ export const useGameStore = create<GameState & Actions>()(
           };
         }
 
-        // update darkness?
-
-        const darknesses = calculateDarknessLevels(
-          [cellKey, ...state.torchIndex[state.layer]],
-          state.cellData,
-          state.layer,
-          state.clickRange,
-        );
-        darknesses.forEach((d) => (state.cellData[d.cellKey].darkness = d.lightLevel));
+        // update darkness? only if we didn't go down a layer; we calculate darkness when we go down.
+        // we insert the last click position here so we can 'turn off' any light that may linger behind a wall
+        console.log('clicks: ', state.position, state.lastPosition);
+        if (cellValue !== '↓') {
+          const darknesses = calculateDarknessLevels(
+            [
+              { coordinate: cellKey, strength: 5 },
+              { coordinate: `${state.lastPosition[0]}:${state.lastPosition[1]}:${state.layer}`, strength: 0 },
+              ...state.torchIndex[state.layer].map((t) => ({ coordinate: t, strength: 7 })),
+            ],
+            state.cellData,
+            state.layer,
+            state.clickRange,
+          );
+          darknesses.forEach((d) => (state.cellData[d.cellKey].darkness = d.lightLevel));
+        }
       });
     },
-    // useItem: (i: Item) => {},
     resetGame: () => {
       set((state) => {
+        state.position = [Math.floor(state.width[0] / 2), Math.floor(state.height[0] / 2)];
         const { objectResults, indices } = generateLayerObjectV2(
           [
             { name: 'GOLD', frequency: GOLDS },
@@ -431,19 +546,38 @@ export const useGameStore = create<GameState & Actions>()(
           WIDTH,
           HEIGHT,
           0,
+          [
+            state.position,
+            [state.position[0] + 1, state.position[1]],
+            [state.position[0] - 1, state.position[1]],
+            [state.position[0], state.position[1] + 1],
+            [state.position[0], state.position[1] - 1],
+          ],
         );
         state.cellData = objectResults;
+        state.mineIndex = []; // empty the arrays, else this causes problems on game resets.
+        state.torchIndex = [];
         state.mineIndex[0] = indices['MINE'];
         state.torchIndex[0] = [];
         state.darknessData = {};
         state.comboCount = 0;
         state.layer = 0;
-        state.lives = 3;
-        state.clicks = 30;
+        state.lives = LIVES;
+        state.clicks = CLICKS;
+        state.torches = TORCHES;
         state.inventory = [];
-        state.position = [Math.floor(state.width[0] / 2), Math.floor(state.height[0] / 2)];
+
+        state.cellData[`${state.position[0]}:${state.position[1]}:${0}`].clicked = true;
+        state.cellData[`${state.position[0] + 1}:${state.position[1]}:${0}`].clicked = true;
+        state.cellData[`${state.position[0] - 1}:${state.position[1]}:${0}`].clicked = true;
+        state.cellData[`${state.position[0]}:${state.position[1] + 1}:${0}`].clicked = true;
+        state.cellData[`${state.position[0]}:${state.position[1] - 1}:${0}`].clicked = true;
+
         const darknesses = calculateDarknessLevels(
-          state.torchIndex[state.layer],
+          [
+            { coordinate: `${state.position[0]}:${state.position[1]}:${0}`, strength: 5 },
+            ...state.torchIndex[state.layer].map((t) => ({ coordinate: t, strength: 7 })),
+          ],
           state.cellData,
           state.layer,
           state.clickRange,
@@ -453,5 +587,3 @@ export const useGameStore = create<GameState & Actions>()(
     },
   })),
 );
-
-// const equalsCheck = (a: Coordinate, b: Coordinate) => a.length === b.length && a.every((v, i) => v === b[i]);

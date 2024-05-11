@@ -9,20 +9,31 @@ export type Item = {
     modifierType: 'ADDITIVE' | 'MULTIPLICATIVE' | 'ABSOLUTE';
   }[];
   maxStackSize: number;
+  cost?: number;
 };
 
 const healthItem: Item = {
   name: 'The Replenishing Rock',
-  description: "Not tasty, but it'll make you feel better",
-  modifiers: [{ propName: 'lives', propModifier: 3, modifierType: 'ADDITIVE' }],
+  description: 'Gives +5 lives',
+  modifiers: [{ propName: 'lives', propModifier: 5, modifierType: 'ADDITIVE' }],
   maxStackSize: 1,
+  cost: 5,
 };
 
 const clicksItem: Item = {
-  name: 'Honk of Fear',
-  description: 'Upon hearing it, you get a rush of energy',
-  modifiers: [{ propName: 'clicks', propModifier: 30, modifierType: 'ADDITIVE' }],
+  name: 'The Booster Juice',
+  description: 'Gives +40 clicks',
+  modifiers: [{ propName: 'clicks', propModifier: 40, modifierType: 'ADDITIVE' }],
   maxStackSize: 1,
+  cost: 5,
+};
+
+const torch: Item = {
+  name: 'Torches of Shining',
+  description: 'A bundle of 10 torches',
+  modifiers: [{ propName: 'torches', propModifier: 10, modifierType: 'ADDITIVE' }],
+  maxStackSize: 1,
+  cost: 5,
 };
 
 const gold: Item = {
@@ -32,4 +43,4 @@ const gold: Item = {
   maxStackSize: 5,
 };
 
-export const items = [healthItem, clicksItem, gold];
+export const items = [healthItem, clicksItem, torch, gold];

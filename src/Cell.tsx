@@ -12,7 +12,7 @@ function Cell({ x, y }: { x: number; y: number }) {
   const currentPosition = useGameStore((state) => state.position);
   const currentClickRange = useGameStore((state) => state.clickRange);
 
-  const ungildCell = useGameStore((state) => state.consumeGold);
+  const ungildCell = useGameStore((state) => state.digUpGold);
   const addToInventory = useGameStore((s) => s.addItemToInventory);
   const setLayer = useGameStore((state) => state.setLayer);
 
@@ -82,16 +82,20 @@ function Cell({ x, y }: { x: number; y: number }) {
 
   if (!isClicked) {
     return (
-      <div
-        onClick={clickThis}
-        onContextMenu={clickThis}
-        style={{ transitionDelay: `${delay}ms` }}
-        // className={`w-8 h-8 ${isCellDark ? 'bg-black' : hasFlag ? 'bg-red-500' : isWithinClickRange ? 'bg-green-300' : 'bg-blue-200'} rounded`}
-        className={`w-8 h-8 cursor-pointer ${hasFlag ? 'bg-red-500' : isWithinClickRange ? 'bg-green-300' : 'bg-blue-200'} rounded`}
-      >
+      <div>
         <div
-          className="bg-indigo-950 w-8 h-8 absolute pointer-events-none"
-          style={{ opacity: `${((MAX_LIGHT_LEVEL - darkness) * 100) / MAX_LIGHT_LEVEL}%` }}
+          className={`bg-indigo-950 w-8 h-8 absolute pointer-events-none z-0 ${isWithinClickRange && 'border-green-400 border-2 border-opacity-30'}`}
+          style={{
+            opacity: `${((MAX_LIGHT_LEVEL - darkness) * 100) / MAX_LIGHT_LEVEL}%`,
+            transitionDelay: `${delay}ms`,
+          }}
+        />
+        <div
+          onClick={clickThis}
+          onContextMenu={clickThis}
+          style={{ transitionDelay: `${delay}ms` }}
+          // className={`w-8 h-8 ${isCellDark ? 'bg-black' : hasFlag ? 'bg-red-500' : isWithinClickRange ? 'bg-green-300' : 'bg-blue-200'} rounded`}
+          className={`w-8 h-8 cursor-pointer ${hasFlag ? 'bg-red-500' : 'bg-amber-900'} ${isWithinClickRange && 'border-green-400 border-2'} rounded`}
         />
       </div>
     );
@@ -113,14 +117,17 @@ function Cell({ x, y }: { x: number; y: number }) {
   return (
     <div style={{ position: 'relative' }}>
       <div
-        className="bg-indigo-950 w-8 h-8 absolute pointer-events-none cursor-pointer"
-        style={{ opacity: `${((MAX_LIGHT_LEVEL - darkness) * 100) / MAX_LIGHT_LEVEL}%` }}
+        className="bg-indigo-950 w-8 h-8 absolute pointer-events-none cursor-pointer z-0"
+        style={{
+          opacity: `${((MAX_LIGHT_LEVEL - darkness) * 100) / MAX_LIGHT_LEVEL}%`,
+          transitionDelay: `${delay}ms`,
+        }}
       />
       <div
         onClick={clickThisClearCell}
         style={{ transitionDelay: `${delay}ms` }}
         className={`w-8 h-8 select-none
-        ${isAtPosition ? 'border-4' : 'border-2'} 
+        ${isAtPosition ? 'border-dashed border-4' : 'border-2'} 
         ${isAtPosition || isWithinClickRange ? 'border-green-400' : 'border-sky-200'}
          bg-gray-50 ${colourMap[display as keyof typeof colourMap]}`}
       >

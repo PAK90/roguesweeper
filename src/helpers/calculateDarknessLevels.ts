@@ -5,7 +5,7 @@ const dRow = [-1, 0, 1, 0];
 const dCol = [0, 1, 0, -1];
 
 export default function calculateDarknessLevels(
-  lightSources: string[],
+  lightSources: { coordinate: string; strength: number }[],
   cellData: CellUpdateData,
   layer: number,
   playerRange: number,
@@ -17,13 +17,13 @@ export default function calculateDarknessLevels(
   const darknessIndex: { [key: string]: number } = {};
 
   lightSources.forEach((lightSource) => {
-    const [sourceX, sourceY] = lightSource.split(':').map(Number);
+    const [sourceX, sourceY] = lightSource.coordinate.split(':').map(Number);
     const checkedCells = { [`${sourceX}${sourceY}`]: true };
 
     const cellsToCheck = [{ cell: [sourceX, sourceY], distance: 0 }];
 
     const isValid = (x: number, y: number, distance: number): boolean => {
-      if (x < 0 || y < 0 || y >= 16 || x >= 30) return false;
+      if (x < 0 || y < 0 || y >= 30 || x >= 30) return false;
       if (checkedCells[`${x}${y}`]) return false;
       if (distance > maxDistance) return false;
       return true;
@@ -36,7 +36,7 @@ export default function calculateDarknessLevels(
       cellsToCheck.shift();
 
       // register this cell's darkness
-      const lightLevel = Math.max(0, maxLightLevel - distance, darknessIndex[`${x}${y}`] || 0);
+      const lightLevel = Math.max(0, lightSource.strength - distance, darknessIndex[`${x}${y}`] || 0);
       darknessIndex[`${x}${y}`] = lightLevel;
       darknessArray.push({ cellKey: `${x}:${y}:${layer}`, lightLevel });
 

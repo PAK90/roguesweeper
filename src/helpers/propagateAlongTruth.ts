@@ -46,7 +46,7 @@ export default function propagateAlongTruth(cellData: CellUpdateData, targetCell
 
   const isValid = (keyToCheck: string, x: number, y: number): boolean => {
     // if (distance > range) return false;
-    if (x < 0 || y < 0 || y > 16 || x > 30) return false;
+    if (x < 0 || y < 0 || y > 30 || x > 30) return false;
     if (checkedCells[keyToCheck]) return false;
     return true;
   };
