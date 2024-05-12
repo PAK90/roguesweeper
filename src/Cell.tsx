@@ -114,6 +114,9 @@ function Cell({ x, y }: { x: number; y: number }) {
   // const opacityString = `opacity-${currentCellData[cellKey]?.darkness * 20}`;
   // const classString = `${opacityString} bg-black w-8 h-8 absolute pointer-events-none`;
 
+  // regarding the weird ternary in the last line of the class;
+  // for some reason setting the bg to amber overrides the cell-specific colours like mine red
+  // but the bg-gray-50 doesn't, so only turn on that amber bg when it's a blank or a number.
   return (
     <div style={{ position: 'relative' }}>
       <div
@@ -129,9 +132,9 @@ function Cell({ x, y }: { x: number; y: number }) {
         className={`w-8 h-8 select-none
         ${isAtPosition ? 'border-dashed border-4' : 'border-2'} 
         ${isAtPosition || isWithinClickRange ? 'border-green-400' : 'border-sky-200'}
-         ${darkness > 4 ? 'bg-amber-100' : 'bg-gray-50'} ${colourMap[display as keyof typeof colourMap]}`}
+         ${(darkness > 4 && !isNaN(parseInt(display))) || display === '' ? 'bg-amber-100' : 'bg-gray-50'} ${colourMap[display as keyof typeof colourMap]}`}
       >
-        {darkness > 4 ? display : ''}
+        {darkness > 4 || isNaN(parseInt(display)) ? display : ''}
       </div>
     </div>
   );
