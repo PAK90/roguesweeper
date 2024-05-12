@@ -131,7 +131,7 @@ function Cell({ x, y }: { x: number; y: number }) {
         ${isAtPosition || isWithinClickRange ? 'border-green-400' : 'border-sky-200'}
          bg-gray-50 ${colourMap[display as keyof typeof colourMap]}`}
       >
-        {display}
+        {darkness > 4 ? display : ''}
       </div>
     </div>
   );

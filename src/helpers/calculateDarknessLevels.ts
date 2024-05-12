@@ -10,7 +10,7 @@ export default function calculateDarknessLevels(
   layer: number,
   playerRange: number,
 ) {
-  const maxLightLevel = 7;
+  const maxLightLevel = 9;
   const maxDistance = maxLightLevel + playerRange;
 
   const darknessArray: { cellKey: string; lightLevel: number }[] = [];

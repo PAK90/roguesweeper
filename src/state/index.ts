@@ -255,7 +255,7 @@ export const useGameStore = create<GameState & Actions>()(
           const darknesses = calculateDarknessLevels(
             [
               { coordinate: `${state.position[0]}:${state.position[1]}:${0}`, strength: 5 },
-              ...state.torchIndex[state.layer].map((t) => ({ coordinate: t, strength: 7 })),
+              ...state.torchIndex[state.layer].map((t) => ({ coordinate: t, strength: 9 })),
             ],
             state.cellData,
             state.layer,
@@ -302,7 +302,7 @@ export const useGameStore = create<GameState & Actions>()(
         const darknesses = calculateDarknessLevels(
           [
             { coordinate: `${state.position[0]}:${state.position[1]}:${state.layer}`, strength: 5 },
-            ...state.torchIndex[state.layer].map((t) => ({ coordinate: t, strength: 7 })),
+            ...state.torchIndex[state.layer].map((t) => ({ coordinate: t, strength: 9 })),
           ],
           state.cellData,
           state.layer,
@@ -364,7 +364,7 @@ export const useGameStore = create<GameState & Actions>()(
         const darknesses = calculateDarknessLevels(
           [
             { coordinate: `${state.position[0]}:${state.position[1]}:${state.layer}`, strength: 5 },
-            ...state.torchIndex[state.layer].map((t) => ({ coordinate: t, strength: 7 })),
+            ...state.torchIndex[state.layer].map((t) => ({ coordinate: t, strength: 9 })),
           ],
           state.cellData,
           state.layer,
@@ -526,7 +526,7 @@ export const useGameStore = create<GameState & Actions>()(
             [
               { coordinate: cellKey, strength: 5 },
               { coordinate: `${state.lastPosition[0]}:${state.lastPosition[1]}:${state.layer}`, strength: 0 },
-              ...state.torchIndex[state.layer].map((t) => ({ coordinate: t, strength: 7 })),
+              ...state.torchIndex[state.layer].map((t) => ({ coordinate: t, strength: 9 })),
             ],
             state.cellData,
             state.layer,
@@ -578,7 +578,7 @@ export const useGameStore = create<GameState & Actions>()(
         const darknesses = calculateDarknessLevels(
           [
             { coordinate: `${state.position[0]}:${state.position[1]}:${0}`, strength: 5 },
-            ...state.torchIndex[state.layer].map((t) => ({ coordinate: t, strength: 7 })),
+            ...state.torchIndex[state.layer].map((t) => ({ coordinate: t, strength: 9 })),
           ],
           state.cellData,
           state.layer,
