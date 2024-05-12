@@ -567,12 +567,7 @@ export const useGameStore = create<GameState & Actions>()(
         state.lives = LIVES;
         state.clicks = CLICKS;
         state.torches = TORCHES;
-        state.inventory = [
-          { name: 'Gold', stackSize: 5 },
-          { name: 'Gold', stackSize: 5 },
-          { name: 'Gold', stackSize: 5 },
-          { name: 'Gold', stackSize: 4 },
-        ];
+        state.inventory = [{ name: 'Gold', stackSize: 5 }];
 
         state.cellData[`${state.position[0]}:${state.position[1]}:${0}`].clicked = true;
         state.cellData[`${state.position[0] + 1}:${state.position[1]}:${0}`].clicked = true;
