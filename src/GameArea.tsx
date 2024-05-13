@@ -14,8 +14,9 @@ function GameArea() {
 
   const currentCombo = useGameStore((state) => state.comboCount);
   const currentLayer = useGameStore((state) => state.layer);
-  const currentLives = useGameStore((state) => state.lives);
-  const currentClicksLeft = useGameStore((state) => state.clicks);
+  const currentLives = useGameStore((state) => state.currentLives);
+  const maxLives = useGameStore((state) => state.maxLives);
+  // const currentClicksLeft = useGameStore((state) => state.clicks);
   const currentTorchesLeft = useGameStore((s) => s.torches);
   // const currentClickRange = useGameStore((state) => state.clickRange);
   const currentCellData = useGameStore((state) => state.cellData);
@@ -82,14 +83,14 @@ function GameArea() {
     resetGame();
   }, [resetGame]);
 
-  useEffect(() => {
-    if (currentClicksLeft <= 0) {
-      if (currentLayer > parseInt(depthRecord)) {
-        localStorage.setItem('depthRecord', currentLayer.toString());
-      }
-      window.alert('You ran out of clicks! Try buying a click supplement in the Store');
-    }
-  }, [currentClicksLeft, depthRecord, currentLayer]);
+  // useEffect(() => {
+  //   if (currentClicksLeft <= 0) {
+  //     if (currentLayer > parseInt(depthRecord)) {
+  //       localStorage.setItem('depthRecord', currentLayer.toString());
+  //     }
+  //     window.alert('You ran out of clicks! Try buying a click supplement in the Store');
+  //   }
+  // }, [currentClicksLeft, depthRecord, currentLayer]);
   useEffect(() => {
     if (currentLives <= 0) {
       if (currentLayer > parseInt(depthRecord)) {
@@ -139,8 +140,8 @@ function GameArea() {
         {/*</label>*/}
         <p className="p-1 m-1 rounded border-green-200 border-2">{`Combo: ${currentCombo}`}</p>
         <p className="p-1 m-1 rounded border-orange-400 border-2">{`Treasure: ${nearestGold}`}</p>
-        <p className="p-1 m-1 rounded border-red-200 border-2">{`Lives: ${currentLives}`}</p>
-        <p className="p-1 m-1 rounded border-cyan-100 border-2">{`Clicks: ${currentClicksLeft}`}</p>
+        <p className="p-1 m-1 rounded border-red-200 border-2">{`Lives: ${currentLives}/${maxLives}`}</p>
+        {/*<p className="p-1 m-1 rounded border-cyan-100 border-2">{`Clicks: ${currentClicksLeft}`}</p>*/}
         <button
           className="m-1 p-0.5 rounded bg-amber-200 duration-100 hover:bg-amber-300 "
           disabled={

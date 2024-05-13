@@ -62,8 +62,9 @@ export type ItemData = {
 export type GameState = {
   shopping: boolean;
   browsingInventory: boolean;
-  lives: number;
-  clicks: number;
+  maxLives: number;
+  currentLives: number;
+  clicks: number[];
   torches: number;
   inventory: ItemData[];
   width: number[];
@@ -110,7 +111,7 @@ const GOLDS = 20;
 const DOORS = 10;
 
 const LIVES = 5;
-const CLICKS = 40;
+// const CLICKS = 40;
 const TORCHES = 10;
 
 export const useGameStore = create<GameState & Actions>()(
@@ -120,8 +121,9 @@ export const useGameStore = create<GameState & Actions>()(
     width: [WIDTH],
     height: [HEIGHT],
     startingMines: MINES,
-    lives: LIVES,
-    clicks: CLICKS,
+    maxLives: LIVES,
+    currentLives: LIVES,
+    clicks: [0],
     torches: TORCHES,
     inventory: [],
     layer: 0,
@@ -246,6 +248,9 @@ export const useGameStore = create<GameState & Actions>()(
           state.comboCount = 0;
           state.layer = 0;
 
+          // set lives to full?
+          state.currentLives = state.maxLives;
+
           state.cellData[`${state.position[0]}:${state.position[1]}:${0}`].clicked = true;
           state.cellData[`${state.position[0] + 1}:${state.position[1]}:${0}`].clicked = true;
           state.cellData[`${state.position[0] - 1}:${state.position[1]}:${0}`].clicked = true;
@@ -286,11 +291,11 @@ export const useGameStore = create<GameState & Actions>()(
       }),
     takeLife: () =>
       set((state) => {
-        state.lives -= 1;
+        state.currentLives -= 1;
       }),
     reduceClicks: () =>
       set((state) => {
-        state.clicks -= 1;
+        state.clicks[state.layer] -= 1;
       }),
     placeTorch: (c: Coordinate) =>
       set((state) => {
@@ -316,6 +321,9 @@ export const useGameStore = create<GameState & Actions>()(
         state.layer = v;
         // if there are no mines on this layer, make some.
         if (state.mineIndex[state.layer]) return;
+
+        // register a new click repository for this layer
+        state.clicks[state.layer] = 0;
 
         const layerScaling = Math.exp(state.layer / 17);
         // const layerScaling = 1; // temporary to work with lighting tests
@@ -385,8 +393,8 @@ export const useGameStore = create<GameState & Actions>()(
     },
     clickCell: (c: Coordinate, cellValue: string) => {
       set((state) => {
-        // take a click
-        state.clicks -= 1;
+        // add a click to this layer's tracker
+        state.clicks[state.layer] += 1;
         // set last position to current state position
         state.lastPosition = state.position;
         // set current position at this click
@@ -487,7 +495,7 @@ export const useGameStore = create<GameState & Actions>()(
               const minesToClick = propagateAlongTruth(state.cellData, cellKey, 1);
               const cellsToClick: string[] = [];
               minesToClick.forEach((mine) => {
-                state.lives -= 1;
+                state.currentLives -= 1;
                 state.cellData[mine] = {
                   ...state.cellData[mine],
                   clicked: true,
@@ -564,8 +572,9 @@ export const useGameStore = create<GameState & Actions>()(
         state.darknessData = {};
         state.comboCount = 0;
         state.layer = 0;
-        state.lives = LIVES;
-        state.clicks = CLICKS;
+        state.maxLives = LIVES;
+        state.currentLives = LIVES;
+        state.clicks = [0];
         state.torches = TORCHES;
         state.inventory = [{ name: 'Gold', stackSize: 5 }];
 

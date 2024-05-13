@@ -132,9 +132,10 @@ function Cell({ x, y }: { x: number; y: number }) {
         className={`w-8 h-8 select-none
         ${isAtPosition ? 'border-dashed border-4' : 'border-2'} 
         ${isAtPosition || isWithinClickRange ? 'border-green-400' : 'border-sky-200'}
-         ${(darkness > 4 && !isNaN(parseInt(display))) || display === '' ? 'bg-amber-100' : 'bg-gray-50'} ${colourMap[display as keyof typeof colourMap]}`}
+         ${darkness > 4 && (!isNaN(parseInt(display)) || display === '') ? 'bg-amber-100' : 'bg-gray-50'} ${colourMap[display as keyof typeof colourMap]}`}
       >
         {darkness > 4 || isNaN(parseInt(display)) ? display : ''}
+        {/*{darkness}*/}
       </div>
     </div>
   );

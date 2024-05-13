@@ -14,19 +14,22 @@ export type Item = {
 
 const healthItem: Item = {
   name: 'The Replenishing Rock',
-  description: 'Gives +5 lives',
-  modifiers: [{ propName: 'lives', propModifier: 5, modifierType: 'ADDITIVE' }],
+  description: 'Gives +5 maximum lives',
+  modifiers: [
+    { propName: 'maxLives', propModifier: 5, modifierType: 'ADDITIVE' },
+    { propName: 'currentLives', propModifier: 5, modifierType: 'ADDITIVE' },
+  ],
   maxStackSize: 1,
   cost: 5,
 };
 
-const clicksItem: Item = {
-  name: 'The Booster Juice',
-  description: 'Gives +40 clicks',
-  modifiers: [{ propName: 'clicks', propModifier: 40, modifierType: 'ADDITIVE' }],
-  maxStackSize: 1,
-  cost: 5,
-};
+// const clicksItem: Item = {
+//   name: 'The Booster Juice',
+//   description: 'Gives +40 clicks',
+//   modifiers: [{ propName: 'clicks', propModifier: 40, modifierType: 'ADDITIVE' }],
+//   maxStackSize: 1,
+//   cost: 5,
+// };
 
 const torch: Item = {
   name: 'Torches of Shining',
@@ -43,4 +46,4 @@ const gold: Item = {
   maxStackSize: 5,
 };
 
-export const items = [healthItem, clicksItem, torch, gold];
+export const items = [healthItem, torch, gold];
