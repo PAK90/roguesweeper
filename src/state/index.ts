@@ -199,9 +199,13 @@ export const useGameStore = create<GameState & Actions>()(
                 const cellsToUnclick = getCoordsAroundCentre(spawn.position, 1, WIDTH, HEIGHT);
                 console.log(cellsToUnclick);
                 cellsToUnclick.forEach((c) => {
-                  state.cellData[`${c[0]}:${c[1]}:${state.layer}`].clicked = false;
-                  if (Math.random() > 0.8) {
-                    state.cellData[`${c[0]}:${c[1]}:${state.layer}`].belowCell = 'MINE';
+                  if (c[0] !== state.position[0] || c[1] !== state.position[1]) {
+                    state.cellData[`${c[0]}:${c[1]}:${state.layer}`].clicked = false;
+                    if (Math.random() > 0.8) {
+                      state.cellData[`${c[0]}:${c[1]}:${state.layer}`].belowCell = 'MINE';
+                    }
+                  } else {
+                    console.log('same pos');
                   }
                 });
                 spawn.clicksSinceActive = 0;

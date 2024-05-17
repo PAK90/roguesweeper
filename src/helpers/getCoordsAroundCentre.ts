@@ -1,6 +1,11 @@
 import { Coordinate } from '../state';
 
-export default function getCoordsAroundCentre(centre: Coordinate, range: number, maxX: number, maxY: number) {
+export default function getCoordsAroundCentre(
+  centre: Coordinate,
+  range: number,
+  maxX: number,
+  maxY: number,
+): Coordinate[] {
   const coordsToReturn = [];
   for (
     let i = Math.min(maxX, Math.max(0, centre[0] - range));
