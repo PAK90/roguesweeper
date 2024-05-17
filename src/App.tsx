@@ -1,5 +1,5 @@
 import './App.css';
-import GameArea from './GameArea.tsx';
+import GameArea from './components/GameArea.tsx';
 import { Analytics } from '@vercel/analytics/react';
 
 function App() {

@@ -1,4 +1,4 @@
-import { useGameStore } from './state';
+import { useGameStore } from '../state';
 
 function ShopDialog() {
   const browsing = useGameStore((state) => state.browsingInventory);

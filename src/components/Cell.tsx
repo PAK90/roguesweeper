@@ -1,5 +1,5 @@
-import { useGameStore } from './state';
-import calculateCellNumber from './helpers/calculateCellNumber.ts';
+import { useGameStore } from '../state';
+import calculateCellNumber from '../helpers/calculateCellNumber.ts';
 import React from 'react';
 
 function Cell({ x, y }: { x: number; y: number }) {
@@ -15,6 +15,8 @@ function Cell({ x, y }: { x: number; y: number }) {
   const ungildCell = useGameStore((state) => state.digUpGold);
   const addToInventory = useGameStore((s) => s.addItemToInventory);
   const setLayer = useGameStore((state) => state.setLayer);
+  const moveSpawns = useGameStore((s) => s.moveSpawns);
+  const spawns = useGameStore((s) => s.spawns);
 
   const cellKey = `${x}:${y}:${currentLayer}`;
   // let isCellDark = false;
@@ -30,19 +32,25 @@ function Cell({ x, y }: { x: number; y: number }) {
   const hasFlag = currentCellData[cellKey]?.aboveCell === 'FLAG';
   const isGilded = currentCellData[cellKey]?.belowCell === 'GOLD';
   const isDoor = currentCellData[cellKey]?.belowCell === 'DOOR';
+  const isDevilDoor = currentCellData[cellKey]?.belowCell === 'DEVIL_DOOR';
   const isAtPosition = currentPosition[0] === x && currentPosition[1] === y;
   const isWithinClickRange =
     Math.floor(Math.sqrt(Math.abs(x - currentPosition[0]) ** 2 + Math.abs(y - currentPosition[1]) ** 2)) <=
     currentClickRange;
+  const hasSpawn = spawns.find((spawn) => spawn.position[0] === x && spawn.position[1] === y);
 
   let display = '';
   const hasMine = currentCellData[cellKey]?.belowCell === 'MINE';
 
   if (!hasMine) {
-    if (isGilded) {
+    if (hasSpawn) {
+      display = 'S';
+    } else if (isGilded) {
       display = 'G';
     } else if (isDoor) {
       display = '↓';
+    } else if (isDevilDoor) {
+      display = '╫';
     } else {
       const cellNum = calculateCellNumber({ x, y }, currentCellData, currentLayer);
       // only show number if it's not 0
@@ -60,6 +68,7 @@ function Cell({ x, y }: { x: number; y: number }) {
       toggleFlag([x, y]);
     } else if (!isClicked && !hasFlag) {
       clickCell([x, y], display);
+      moveSpawns([x, y]);
     }
   };
 
@@ -72,6 +81,7 @@ function Cell({ x, y }: { x: number; y: number }) {
       setLayer(currentLayer + 1);
     } else if (isClicked && !hasFlag) {
       clickCell([x, y], display);
+      moveSpawns([x, y]);
     }
   };
 
@@ -104,11 +114,13 @@ function Cell({ x, y }: { x: number; y: number }) {
   const colourMap = {
     M: 'text-black-500 bg-red-300',
     G: 'text-orange-400 bg-orange-200',
+    S: 'text-green-400 bg-green-200',
     '1': 'text-blue-500',
     '2': 'text-green-500',
     '3': 'text-red-500',
     '4': 'text-purple-500',
     '↓': 'text-white bg-gray-600',
+    '╫': 'text-red-300 bg-gray-600',
   };
 
   // const opacityString = `opacity-${currentCellData[cellKey]?.darkness * 20}`;
@@ -134,8 +146,11 @@ function Cell({ x, y }: { x: number; y: number }) {
         ${isAtPosition || isWithinClickRange ? 'border-green-400' : 'border-sky-200'}
          ${darkness > 4 && (!isNaN(parseInt(display)) || display === '') ? 'bg-amber-100' : 'bg-gray-50'} ${colourMap[display as keyof typeof colourMap]}`}
       >
-        {darkness > 4 || isNaN(parseInt(display)) ? display : ''}
-        {/*{darkness}*/}
+        <span style={{ opacity: `${100 - ((MAX_LIGHT_LEVEL - darkness) * 100) / MAX_LIGHT_LEVEL}%` }}>
+          {darkness > 4 || isNaN(parseInt(display)) ? display : ''}
+          {/*{darkness}*/}
+          {/*{display}*/}
+        </span>
       </div>
     </div>
   );

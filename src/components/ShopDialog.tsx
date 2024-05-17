@@ -1,5 +1,5 @@
-import { useGameStore } from './state';
-import { Item, items } from './items.ts';
+import { useGameStore } from '../state';
+import { Item, items } from '../items.ts';
 
 function ShopDialog() {
   const shopping = useGameStore((state) => state.shopping);

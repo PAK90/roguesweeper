@@ -3,10 +3,10 @@ import { GameState } from './state';
 export type Item = {
   name: string;
   description: string;
-  modifiers: {
+  effects: {
     propName: keyof GameState;
     propModifier: number;
-    modifierType: 'ADDITIVE' | 'MULTIPLICATIVE' | 'ABSOLUTE';
+    effectType: 'ADDITIVE' | 'MULTIPLICATIVE' | 'ABSOLUTE';
   }[];
   maxStackSize: number;
   cost?: number;
@@ -15,9 +15,9 @@ export type Item = {
 const healthItem: Item = {
   name: 'The Replenishing Rock',
   description: 'Gives +5 maximum lives',
-  modifiers: [
-    { propName: 'maxLives', propModifier: 5, modifierType: 'ADDITIVE' },
-    { propName: 'currentLives', propModifier: 5, modifierType: 'ADDITIVE' },
+  effects: [
+    { propName: 'maxLives', propModifier: 5, effectType: 'ADDITIVE' },
+    { propName: 'currentLives', propModifier: 5, effectType: 'ADDITIVE' },
   ],
   maxStackSize: 1,
   cost: 5,
@@ -26,7 +26,7 @@ const healthItem: Item = {
 // const clicksItem: Item = {
 //   name: 'The Booster Juice',
 //   description: 'Gives +40 clicks',
-//   modifiers: [{ propName: 'clicks', propModifier: 40, modifierType: 'ADDITIVE' }],
+//   effects: [{ propName: 'clicks', propModifier: 40, effectType: 'ADDITIVE' }],
 //   maxStackSize: 1,
 //   cost: 5,
 // };
@@ -34,7 +34,7 @@ const healthItem: Item = {
 const torch: Item = {
   name: 'Torches of Shining',
   description: 'A bundle of 10 torches',
-  modifiers: [{ propName: 'torches', propModifier: 10, modifierType: 'ADDITIVE' }],
+  effects: [{ propName: 'torches', propModifier: 10, effectType: 'ADDITIVE' }],
   maxStackSize: 1,
   cost: 5,
 };
@@ -42,7 +42,7 @@ const torch: Item = {
 const gold: Item = {
   name: 'Gold',
   description: 'Shiiiiiny!',
-  modifiers: [],
+  effects: [],
   maxStackSize: 5,
 };
 

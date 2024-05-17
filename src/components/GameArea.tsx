@@ -1,9 +1,10 @@
-import { useGameStore } from './state';
-import range from './helpers/range.ts';
+import { useGameStore } from '../state';
+import range from '../helpers/range.ts';
 import Cell from './Cell.tsx';
 import { useEffect } from 'react';
 import ShopDialog from './ShopDialog.tsx';
 import InventoryDialog from './InventoryDialog.tsx';
+import ActiveInventory from '../ActiveInventory.tsx';
 
 function GameArea() {
   // const setWidth = useGameStore((state) => state.setWidth);
@@ -145,8 +146,8 @@ function GameArea() {
         <button
           className="m-1 p-0.5 rounded bg-amber-200 duration-100 hover:bg-amber-300 "
           disabled={
-            currentCellData[`${currentPosition[0]}:${currentPosition[1]}:${currentLayer}`]?.aboveCell === 'TORCH' &&
-            currentTorchesLeft > 0
+            currentCellData[`${currentPosition[0]}:${currentPosition[1]}:${currentLayer}`]?.aboveCell === 'TORCH' ||
+            currentTorchesLeft <= 0
           }
           onClick={() => setTorch(currentPosition)}
         >
@@ -177,7 +178,17 @@ function GameArea() {
         {/*  Layer Down*/}
         {/*</button>*/}
       </div>
-      <div className="w-full flex justify-center">
+      <ActiveInventory />
+      <div className="w-full flex justify-center position-relative">
+        <div className={'position-absolute z-10 pointer-events-none'}>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-full w-max"
+            viewBox={`0 0 ${gridWidth * 32} ${gridHeight * 32}`}
+          >
+            {/*<line x1={0} y1={0} x2={40} y2={80} stroke="green" strokeWidth={2} />*/}
+          </svg>
+        </div>
         {range(gridWidth).map((_, rIx) => {
           return (
             <div key={`${rIx}`} className="">
