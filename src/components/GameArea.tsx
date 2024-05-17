@@ -4,7 +4,7 @@ import Cell from './Cell.tsx';
 import { useEffect } from 'react';
 import ShopDialog from './ShopDialog.tsx';
 import InventoryDialog from './InventoryDialog.tsx';
-import ActiveInventory from '../ActiveInventory.tsx';
+import ActiveInventory from './ActiveInventory.tsx';
 
 function GameArea() {
   // const setWidth = useGameStore((state) => state.setWidth);

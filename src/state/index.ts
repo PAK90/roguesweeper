@@ -172,12 +172,13 @@ export const useGameStore = create<GameState & Actions>()(
             if (spawn.type === 'SNAKE') {
               // move the snek; it will have a 50% chance to move in the same direction, and evenly split by the rest
               // unless it tries to move too close to a wall
-              let nextDirection: Direction = chooseWeightedOption([
+              let nextDirection = chooseWeightedOption([
                 { id: 'N', weight: spawn.facing === 'N' ? 50 : 50 / 3 },
                 { id: 'E', weight: spawn.facing === 'E' ? 50 : 50 / 3 },
                 { id: 'S', weight: spawn.facing === 'S' ? 50 : 50 / 3 },
                 { id: 'W', weight: spawn.facing === 'W' ? 50 : 50 / 3 },
-              ]);
+              ]) as Direction;
+              // TODO: Fix these AS things, gotta do funky typescript things
 
               let nextDestination = moveWithinBounds(nextDirection, spawn.speed, spawn.position);
 
@@ -187,7 +188,7 @@ export const useGameStore = create<GameState & Actions>()(
                   { id: 'E', weight: spawn.facing === 'E' ? 50 : 50 / 3 },
                   { id: 'S', weight: spawn.facing === 'S' ? 50 : 50 / 3 },
                   { id: 'W', weight: spawn.facing === 'W' ? 50 : 50 / 3 },
-                ]);
+                ]) as Direction;
                 nextDestination = moveWithinBounds(nextDirection, spawn.speed, spawn.position);
               }
 
