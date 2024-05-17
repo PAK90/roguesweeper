@@ -270,8 +270,7 @@ export const useGameStore = create<GameState & Actions>()(
           // apply item effects
           item.effects.forEach((effect) => {
             if (effect.effectType === 'ADDITIVE') {
-              // @ts-expect-error something something never
-              state[modifier.propName] += modifier.propModifier;
+              state[effect.propName] += effect.propModifier;
             }
           });
           // pay the item's cost (assuming we've checked elsewhere if we have enough gold to pay for it)
